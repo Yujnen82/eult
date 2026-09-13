@@ -59,4 +59,72 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Tiket Selesai', $html);
         $this->assertStringContainsString('TK-2026-001', $html);
     }
+
+    public function testTicketingResponseRendersScannableTableAndBadges(): void
+    {
+        $renderer = service('renderer');
+        $html = $renderer->setData([
+            'page_judul' => 'Daftar Tiket Permohonan Layanan',
+            'user_group' => 'ADMIN',
+            'detail_url' => base_url('ticketing/detail/'),
+            'sgroup' => false,
+            'datas' => [
+                [
+                    'ticketTrackingId' => 'TK-2026-999',
+                    'ticketName' => 'Siti Rahmawati',
+                    'ticketCreated' => '2026-09-13 14:00:00',
+                    'categoryNama' => 'Layanan Akademik',
+                    'sCatNama' => 'Legalisir Ijazah & Transkrip',
+                    'priorityName' => 'Normal',
+                    'unitNama' => 'Biro Akademik',
+                    'statusNama' => 'Dalam Proses',
+                    'statusColor' => 'info',
+                    'ticketStatus' => 3,
+                    'disposisiIsTrue' => false,
+                    'ticketSuratCreated' => 'SRT-01',
+                    'sCatDisposisi' => 'TOPDOWN',
+                    'ticketAssign' => 1,
+                    'ticketIsVerified' => 1,
+                    'jenislayananId' => 1,
+                    'disposisiIsRejected' => 0,
+                    'sCatId' => 10,
+                ]
+            ],
+        ])->render('pages/ticketing/response');
+
+        $this->assertStringContainsString('TK-2026-999', $html);
+        $this->assertStringContainsString('Siti Rahmawati', $html);
+        $this->assertStringContainsString('kt-badge--unified-info', $html);
+    }
+
+    public function testTicketingIndexRendersStatusPillsAndFilterRow(): void
+    {
+        $renderer = service('renderer');
+        $html = $renderer->setData([
+            'page_judul' => 'Daftar Tiket Permohonan Layanan',
+            'create_url' => base_url('ticketing/create'),
+            'show_url' => base_url('ticketing/response'),
+            'tanggal' => '01-09-2026 / 30-09-2026',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'category' => [
+                ['unitId' => 1, 'unitNama' => 'Biro Akademik']
+            ],
+            'status_layanan' => [
+                ['statusId' => 1, 'statusNama' => 'Baru'],
+                ['statusId' => 2, 'statusNama' => 'Disposisi'],
+                ['statusId' => 3, 'statusNama' => 'Verifikasi'],
+                ['statusId' => 5, 'statusNama' => 'Selesai'],
+            ],
+        ])->render('pages/ticketing/index');
+
+        $this->assertStringContainsString('Semua', $html);
+        $this->assertStringContainsString('Baru', $html);
+        $this->assertStringContainsString('Disposisi', $html);
+        $this->assertStringContainsString('Verifikasi', $html);
+        $this->assertStringContainsString('Selesai', $html);
+        $this->assertStringContainsString('rentangTanggal', $html);
+        $this->assertStringContainsString('layanan', $html);
+    }
 }
+
+

@@ -16,17 +16,24 @@ if (! function_exists('eult_tombol_aksi')) {
      */
     function eult_tombol_aksi(array $param = []): void
     {
-        $sesi      = session()->get('logged_in');
-        $tiket     = new \App\Models\ModelTicketing();
-        $enkripsi  = new \App\Libraries\Enkripsi();
-        $idSurat   = $enkripsi->decode($param['key']);
-        $dataSurat = $tiket->ambilSatu('r_surat', "suratTrackingId = '" . esc($idSurat, 'js') . "'");
-        $noSurat   = $dataSurat !== false && $dataSurat !== null ? ($dataSurat['suratNomor'] ?? '') : '';
+        $sesi           = session()->get('logged_in');
+        $susrSgroupNama = is_array($sesi) ? ($sesi['susrSgroupNama'] ?? '') : ($param['user_group'] ?? '');
+        $noSurat        = '';
 
-        $isOperator   = strpos($sesi['susrSgroupNama'], 'OPERATOR');
-        $isProduksi   = strpos($sesi['susrSgroupNama'], 'KASUBBAG');
-        $isDisposisi  = (strpos($sesi['susrSgroupNama'], 'DISPOSISI') !== false);
-        $isVerifikator = strpos($sesi['susrSgroupNama'], 'KASUBBAG');
+        try {
+            $tiket     = new \App\Models\ModelTicketing();
+            $enkripsi  = new \App\Libraries\Enkripsi();
+            $idSurat   = $enkripsi->decode($param['key']);
+            $dataSurat = $tiket->ambilSatu('r_surat', "suratTrackingId = '" . esc($idSurat, 'js') . "'");
+            $noSurat   = $dataSurat !== false && $dataSurat !== null ? ($dataSurat['suratNomor'] ?? '') : '';
+        } catch (\Throwable $e) {
+            $noSurat = '';
+        }
+
+        $isOperator    = strpos($susrSgroupNama, 'OPERATOR');
+        $isProduksi    = strpos($susrSgroupNama, 'KASUBBAG');
+        $isDisposisi   = (strpos($susrSgroupNama, 'DISPOSISI') !== false);
+        $isVerifikator = strpos($susrSgroupNama, 'KASUBBAG');
 
         $urlValidasi = $param['jenis'] === 'BOTTOMUP'
             ? (' <a href="' . site_url('ticketing/last_validated') . '/' . $param['key'] . '" data-toggle="modal" title="Validasi Tiket" data-target="#nomor_surat"  data-val="' . $noSurat . '" data-linkkeys="' . site_url('ticketing/last_validated') . '/' . $param['key'] . '" class="btn btn-sm btn-outline-success btn-elevate btn-circle btn-icon">')
@@ -38,7 +45,7 @@ if (! function_exists('eult_tombol_aksi')) {
         $isVerified = ((($param['isVerified'] ?? null) == 1 && ($param['jenis'] ?? null) === 'BOTTOMUP') || empty($param['jenis'])) ? true : false;
 
         $action = '';
-        if ($sesi['susrSgroupNama'] === 'ADMIN') {
+        if ($susrSgroupNama === 'ADMIN') {
             $action .= '
             <a href="' . site_url('ticketing/update') . '/' . $param['key'] . '" data-toggle="kt-tooltip" title="Edit" id="ts_update_row' . $param['urut'] . '" class="ts_update_row btn btn-sm btn-outline-info btn-elevate btn-circle btn-icon">
             <span>
@@ -237,3 +244,16 @@ if (! function_exists('eult_tombol_aksi')) {
         echo $action;
     }
 }
+
+if (! function_exists('getaction')) {
+    /**
+     * Alias getaction untuk kompatibilitas pemanggilan view antrean tiket.
+     *
+     * @param array{key:string,urut:string|int,jenis:string|null,layanan:string,layananId?:string,suratCreated:bool|string,status:int|string,isVerified:int|string,disposisiIsTrue:bool|string,isSehari:int|string,ishome:bool,isRejected?:int|string} $param
+     */
+    function getaction(array $param = []): void
+    {
+        eult_tombol_aksi($param);
+    }
+}
+

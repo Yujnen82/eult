@@ -54,3 +54,14 @@ if (! function_exists('eult_hari_indo')) {
         }
     }
 }
+
+if (! function_exists('DateToIndo')) {
+    /**
+     * Alias DateToIndo untuk kompatibilitas view lama/CI3.
+     */
+    function DateToIndo(string $tanggal): string|false
+    {
+        return eult_tanggal_indo($tanggal);
+    }
+}
+

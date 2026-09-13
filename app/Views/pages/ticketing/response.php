@@ -1,107 +1,164 @@
 <!--Begin::Row-->
 <!-- begin:: Content -->
-<div class="kt-container  kt-container--fluid  kt-grid__item kt-grid__item--fluid">
+<div class="kt-container kt-container--fluid kt-grid__item kt-grid__item--fluid">
     <div class="row">
         <div class="col-md-12">
             <div id="response"></div>
             <!--begin::Portlet-->
-            <div class="kt-portlet">
-                <div class="kt-portlet__head">
+            <div class="kt-portlet kt-portlet--mobile">
+                <div class="kt-portlet__head kt-portlet__head--lg">
                     <div class="kt-portlet__head-label">
-                        <h3 class="kt-portlet__head-title">
-                            <?= strtoupper($page_judul) ?>
+                        <span class="kt-portlet__head-icon"><i class="flaticon2-layers-1 text-primary"></i></span>
+                        <h3 class="kt-portlet__head-title font-weight-bold">
+                            <?= esc(strtoupper($page_judul ?? 'Daftar Tiket Permohonan Layanan')) ?>
                         </h3>
                     </div>
-                    <!-- <div class="kt-portlet__head-toolbar">
-                        <div class="kt-portlet__head-actions">
-                            <?php if ($user_group == 'ADMIN') { ?>
-                                <a href="<?= $export_url ?>" class="btn btn-outline-success" id="btn-create">
-                                    <span>
-                                        <i class="fa fa-file-excel"></i>
-                                        <span>Export To Excel</span>
-                                    </span>
+                    <?php if (!empty($export_url) && ($user_group ?? '') === 'ADMIN'): ?>
+                        <div class="kt-portlet__head-toolbar">
+                            <div class="kt-portlet__head-actions">
+                                <a href="<?= esc($export_url) ?>" class="btn btn-sm btn-outline-success font-weight-bold" id="btn-export">
+                                    <i class="fa fa-file-excel mr-1"></i> Ekspor Excel
                                 </a>
-                            <?php } ?>
-                        </div>
-                    </div> -->
-                </div>
-
-                <div class="kt-portlet__body">
-
-                    <!--begin::Section-->
-                    <div class="kt-section">
-                        <div class="kt-section__content">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th style="text-align: center">Nomor Tracking / Customer</th>
-                                            <th style="text-align: center">Layanan / Keperluan</th>
-                                            <th style="text-align: center">Prioritas</th>
-                                            <th style="text-align: center">Status/Disposisi Tiket</th>
-                                            <th style="text-align: center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        if ($datas != false) {
-                                            $i = 1;
-                                            foreach ($datas as $row) {
-                                                $key = service('enkripsi')->encode($row['ticketTrackingId']);
-                                                $istrue = !($user_group == 'ADMIN' or (strpos($user_group, 'OPERATOR') !== FALSE)) ? $row['disposisiIsTrue'] : FALSE;
-                                                $suratistrue = empty($row['ticketSuratCreated']);
-                                                $isBottomTop = $row['sCatDisposisi'] != 'BOTTOMUP' ? FALSE : TRUE;                                        
-                                                $isHome = $sgroup != false ? (($sgroup->sgroupunitUnitId == $row['ticketAssign'] and $row['disposisiIsTrue'] != 1) ? true : false) : false;
-                                                $verified = ($row['ticketIsVerified'] != 1 AND $row['jenislayananId'] == 2 AND $row['sCatDisposisi'] == 'BOTTOMUP' AND $row['statusId'] == 3)? '<span class="kt-badge kt-badge--danger kt-badge--inline kt-badge--pill kt-badge--rounded">Belum Verifikasi</span>':'';
-                                                $suratIsCreated = ($suratistrue != FALSE AND $isBottomTop == TRUE)? '<span class="kt-badge kt-badge--warning kt-badge--inline kt-badge--pill kt-badge--rounded">Surat Sedang Dalam Proses</span>':'';
-                                        ?>
-                                                <tr>
-                                                    <td nowrap style="vertical-align: middle" align="center"><a href="<?= $detail_url . $key ?>"><?= $row['ticketTrackingId'] ?></a><br><?= $row['ticketName']."<p class='text-success'>".DateToIndo($row['ticketCreated'])." ".date('H:i:s',strtotime($row['ticketCreated']))."</p>" ?></td>
-                                                    <td style="vertical-align: middle" align="center"><b><?= $row['categoryNama'] . "</b><br> " . $row['sCatNama'] ?></td>
-                                                    <td style="vertical-align: middle" align="center"><?= $row['priorityName'] ?></td>
-                                                    <td style="vertical-align: middle" nowrap align="center">
-                                                        <p class="kt-font-boldest"><?= $row['unitNama'] ?></p><span class="kt-badge kt-badge--<?= $row['statusColor'] ?> kt-badge--inline kt-badge--pill kt-badge--rounded"><?= $row['statusNama'] ?></span><br><?=$verified?><?=$row['ticketIsVerified'] == 1?$suratIsCreated:''?>
-                                                    </td>
-                                                    <td style="vertical-align: middle" align="center" nowrap>
-                                                        <?php if (in_array($row['ticketStatus'], array(1, 2, 3, 4, 5, 6, 7, 9, 10)) or $user_group == 'ADMIN') {
-                                                            $param = array(
-                                                                'key' => $key,
-                                                                'status' => $row['ticketStatus'],
-                                                                'urut' => $i,
-                                                                'disposisiIsTrue' => $istrue,
-                                                                'suratCreated' => $suratistrue,
-                                                                'jenis' => $row['sCatDisposisi'],
-                                                                'isVerified' => $row['ticketIsVerified'],
-                                                                'isRejected' => $row['disposisiIsRejected'],
-                                                                'isSehari' => $row['jenislayananId'],
-                                                                'ishome' => $isHome
-                                                                ,
-                                                                'layanan' => $row['sCatId']
-                                                            );
-                                                            getaction($param);
-                                                        } ?>
-                                                    </td>
-                                                </tr>
-                                        <?php
-                                                $i++;
-                                            }
-                                        }
-                                        ?>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
+                </div>
 
-                    <!--end::Section-->
+                <div class="kt-portlet__body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0" id="table_ticketing">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 22%; font-size: 12px; vertical-align: middle;">Nomor Tracking / Pemohon</th>
+                                    <th style="width: 28%; font-size: 12px; vertical-align: middle;">Layanan &amp; Keperluan</th>
+                                    <th style="width: 12%; font-size: 12px; text-align: center; vertical-align: middle;">Prioritas</th>
+                                    <th style="width: 20%; font-size: 12px; vertical-align: middle;">Status / Unit</th>
+                                    <th style="width: 18%; font-size: 12px; text-align: center; vertical-align: middle;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                if (!empty($datas)) {
+                                    $i = 1;
+                                    foreach ($datas as $row) {
+                                        $key            = service('enkripsi')->encode($row['ticketTrackingId']);
+                                        $istrue         = !(($user_group ?? '') === 'ADMIN' || (strpos(($user_group ?? ''), 'OPERATOR') !== false)) ? ($row['disposisiIsTrue'] ?? false) : false;
+                                        $suratistrue    = empty($row['ticketSuratCreated']);
+                                        $isBottomTop    = ($row['sCatDisposisi'] ?? '') === 'BOTTOMUP';
+                                        $isHome         = !empty($sgroup) ? ((($sgroup->sgroupunitUnitId ?? null) == ($row['ticketAssign'] ?? null) && ($row['disposisiIsTrue'] ?? null) != 1)) : false;
+                                        $verified       = (($row['ticketIsVerified'] ?? 0) != 1 && ($row['jenislayananId'] ?? 0) == 2 && ($row['sCatDisposisi'] ?? '') === 'BOTTOMUP' && ($row['statusId'] ?? 0) == 3)
+                                            ? '<span class="kt-badge kt-badge--unified-danger kt-badge--inline kt-badge--pill font-weight-bold mt-1">Belum Verifikasi</span>'
+                                            : '';
+                                        $suratIsCreated = ($suratistrue && $isBottomTop)
+                                            ? '<span class="kt-badge kt-badge--unified-warning kt-badge--inline kt-badge--pill font-weight-bold mt-1">Surat Sedang Dalam Proses</span>'
+                                            : '';
+                                        $tglFormatted   = function_exists('eult_tanggal_indo')
+                                            ? eult_tanggal_indo(substr($row['ticketCreated'], 0, 10))
+                                            : date('d-m-Y', strtotime($row['ticketCreated']));
+                                        $jamFormatted   = date('H:i:s', strtotime($row['ticketCreated']));
+                                ?>
+                                        <tr>
+                                            <!-- Kolom 1: Nomor Tracking & Pemohon -->
+                                            <td style="vertical-align: middle;">
+                                                <a href="<?= esc(($detail_url ?? base_url('ticketing/detail/')) . $key) ?>" class="font-weight-bold" style="font-family: monospace; font-size: 13px; color: #5d78ff; text-decoration: none;">
+                                                    <?= esc($row['ticketTrackingId']) ?>
+                                                </a>
+                                                <div class="font-weight-bold text-dark mt-1" style="font-size: 13px;">
+                                                    <?= esc($row['ticketName']) ?>
+                                                </div>
+                                                <span class="text-muted" style="font-size: 11px;">
+                                                    <i class="flaticon2-calendar-1 mr-1"></i><?= $tglFormatted ?> <?= $jamFormatted ?>
+                                                </span>
+                                            </td>
+
+                                            <!-- Kolom 2: Layanan & Keperluan -->
+                                            <td style="vertical-align: middle;">
+                                                <div class="font-weight-bold text-dark" style="font-size: 13px;">
+                                                    <?= esc($row['categoryNama'] ?? '') ?>
+                                                </div>
+                                                <div class="text-muted mt-1" style="font-size: 12px; line-height: 1.4;">
+                                                    <?= esc($row['sCatNama'] ?? '') ?>
+                                                </div>
+                                            </td>
+
+                                            <!-- Kolom 3: Prioritas -->
+                                            <td style="vertical-align: middle; text-align: center;">
+                                                <span class="kt-badge kt-badge--unified-<?= (in_array(strtolower($row['priorityName'] ?? ''), ['tinggi', 'urgent', 'high'])) ? 'danger' : 'secondary' ?> kt-badge--inline font-weight-bold">
+                                                    <?= esc($row['priorityName'] ?? 'Normal') ?>
+                                                </span>
+                                            </td>
+
+                                            <!-- Kolom 4: Status / Unit -->
+                                            <td style="vertical-align: middle;">
+                                                <div class="font-weight-bold text-dark mb-1" style="font-size: 12px;">
+                                                    <?= esc($row['unitNama'] ?? '') ?>
+                                                </div>
+                                                <span class="kt-badge kt-badge--unified-<?= esc($row['statusColor'] ?? 'info') ?> kt-badge--inline kt-badge--pill font-weight-bold">
+                                                    <?= esc($row['statusNama'] ?? '') ?>
+                                                </span>
+                                                <?php if (!empty($verified)): ?>
+                                                    <div><?= $verified ?></div>
+                                                <?php endif; ?>
+                                                <?php if (($row['ticketIsVerified'] ?? 0) == 1 && !empty($suratIsCreated)): ?>
+                                                    <div><?= $suratIsCreated ?></div>
+                                                <?php endif; ?>
+                                            </td>
+
+                                            <!-- Kolom 5: Aksi -->
+                                            <td style="vertical-align: middle; text-align: center;" nowrap>
+                                                <div class="d-flex align-items-center justify-content-center flex-wrap" style="gap: 4px;">
+                                                    <?php if (in_array($row['ticketStatus'] ?? 0, [1, 2, 3, 4, 5, 6, 7, 9, 10]) || ($user_group ?? '') === 'ADMIN') {
+                                                        $param = [
+                                                            'key'             => $key,
+                                                            'status'          => $row['ticketStatus'] ?? 0,
+                                                            'urut'            => $i,
+                                                            'disposisiIsTrue' => $istrue,
+                                                            'suratCreated'    => $suratistrue,
+                                                            'jenis'           => $row['sCatDisposisi'] ?? null,
+                                                            'isVerified'      => $row['ticketIsVerified'] ?? 0,
+                                                            'isRejected'      => $row['disposisiIsRejected'] ?? 0,
+                                                            'isSehari'        => $row['jenislayananId'] ?? 0,
+                                                            'ishome'          => $isHome,
+                                                            'layanan'         => $row['sCatId'] ?? '',
+                                                            'user_group'      => $user_group ?? 'ADMIN',
+                                                        ];
+                                                        if (function_exists('getaction')) {
+                                                            getaction($param);
+                                                        } elseif (function_exists('eult_tombol_aksi')) {
+                                                            eult_tombol_aksi($param);
+                                                        }
+                                                    } ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                <?php
+                                        $i++;
+                                    }
+                                } else {
+                                ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted">
+                                            <div class="my-3">
+                                                <i class="flaticon2-open-box" style="font-size: 3rem; color: #a1a8c3;"></i>
+                                            </div>
+                                            <div class="font-weight-bold" style="font-size: 14px; color: #48465b;">Tidak Ada Data Tiket Ditemukan</div>
+                                            <span class="text-muted" style="font-size: 12px;">Silakan pilih filter tanggal atau unit layanan yang berbeda.</span>
+                                        </td>
+                                    </tr>
+                                <?php
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-
             <!--end::Portlet-->
         </div>
     </div>
 </div>
 <!--End::Row-->
+
 
 <!--begin::Modal-->
 <div class="modal fade" id="nomor_surat" tabindex="-1" role="dialog" aria-labelledby="nomor_surat" aria-hidden="true">

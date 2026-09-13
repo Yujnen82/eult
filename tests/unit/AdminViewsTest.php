@@ -249,6 +249,21 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('btn-ajax-modal', $html);
         $this->assertStringContainsString('modal-action-dialog', $html);
     }
+
+    public function testValidasifileViewRendersSecurityCardsAndManifestTable(): void
+    {
+        $renderer = service('renderer');
+        $renderer->resetData();
+        $html = $renderer->setData([
+            'page_judul' => 'Validasi & Keamanan Berkas Digital',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+        ])->render('pages/validasifile/index');
+
+        $this->assertStringContainsString('Integritas Berkas', $html);
+        $this->assertStringContainsString('Berkas Aman', $html);
+        $this->assertStringContainsString('Berkas Dikarantina', $html);
+    }
 }
+
 
 

@@ -9,7 +9,7 @@ use App\Models\ModelHakaksespengguna;
  */
 class Hakaksespengguna extends BaseController
 {
-    protected ?string $judul = 'Hak Akses Modul';
+    protected ?string $judul = 'Hak Akses Pengguna';
 
     protected ?string $controllerName = 'hakaksespengguna';
 
@@ -37,7 +37,7 @@ class Hakaksespengguna extends BaseController
     public function response(): string
     {
         if (! $this->validate(['pengguna' => 'required'])) {
-            eult_message_kirim('Ooops!! Something Wrong!!', 'error');
+            eult_message_kirim('Silakan pilih pengguna terlebih dahulu.', 'error');
         }
 
         $pengguna = (string) $this->request->getPost('pengguna');
@@ -52,14 +52,14 @@ class Hakaksespengguna extends BaseController
     public function save()
     {
         if (! $this->validate(['cekModul' => 'required', 'susrNama' => 'required'])) {
-            eult_message_kirim('Ooops!! Something Wrong!!', 'error');
+            eult_message_kirim('Data hak akses tidak lengkap.', 'error');
         }
 
         $dipilih = $this->request->getPost('cekModul');
         $nama    = (string) $this->request->getPost('susrNama');
 
         if (! is_array($dipilih) || count($dipilih) === 0) {
-            eult_message_kirim('Pilih Menu!! Minimal 1', 'error');
+            eult_message_kirim('Pilih minimal 1 grup untuk hak akses pengguna ini.', 'error');
         }
 
         $this->matriks->hapus('s_user_group_user', ['sgroupSusrNama' => $nama]);

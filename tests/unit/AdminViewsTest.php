@@ -672,6 +672,201 @@ class AdminViewsTest extends CIUnitTestCase
 
         $this->assertStringContainsString('Belum ada modul', $htmlEmpty);
     }
+
+    /**
+     * Memastikan hakaksesunit index dan response menggunakan standar portlet, tombol, dan checkbox terpadu.
+     */
+    public function testHakaksesunitViewsUseConsistentPortletAndCheckboxStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Hak Akses Unit',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'show_url' => base_url('hakaksesunit/response/'),
+            's_user_group' => [
+                ['sgroupNama' => 'ADMIN', 'sgroupKeterangan' => 'Administrator Sistem', 'sgroupUnit' => '01']
+            ],
+        ])->render('pages/hakaksesunit/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tampilkan Hak Akses', $htmlIndex);
+        $this->assertStringContainsString('flaticon2-search-1', $htmlIndex);
+        $this->assertStringContainsString('Pilih Grup Pengguna', $htmlIndex);
+        $this->assertStringContainsString('id="response"', $htmlIndex);
+
+        $renderer->resetData();
+        $htmlResponse = $renderer->setData([
+            'save_url' => base_url('hakaksesunit/save/'),
+            'sgroupNama' => 'ADMIN',
+            'datas' => [
+                [
+                    'unitId' => '1',
+                    'unitKode' => '01',
+                    'unitNama' => 'Rektorat',
+                    'sgroupunitUnitId' => '1',
+                    'sgroupunitIsHome' => 1,
+                ],
+                [
+                    'unitId' => '2',
+                    'unitKode' => '02',
+                    'unitNama' => 'Fakultas Teknik',
+                    'sgroupunitUnitId' => '',
+                    'sgroupunitIsHome' => 0,
+                ],
+            ],
+        ])->render('pages/hakaksesunit/response');
+
+        $this->assertStringContainsString('kt-portlet', $htmlResponse);
+        $this->assertStringContainsString('no-datatable', $htmlResponse);
+        $this->assertStringContainsString('btn-brand', $htmlResponse);
+        $this->assertStringContainsString('Simpan Perubahan Hak Akses', $htmlResponse);
+        $this->assertStringContainsString('kt-checkbox', $htmlResponse);
+        $this->assertStringContainsString('check_all_unit', $htmlResponse);
+        $this->assertStringContainsString('check-unit-item', $htmlResponse);
+        $this->assertStringContainsString('check-ishome-item', $htmlResponse);
+        $this->assertStringContainsString('Unit Utama', $htmlResponse);
+        $this->assertStringContainsString('Rektorat', $htmlResponse);
+        $this->assertStringContainsString('checked', $htmlResponse);
+        $this->assertStringNotContainsString('Is Home', $htmlResponse);
+
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'save_url' => base_url('hakaksesunit/save/'),
+            'sgroupNama' => 'ADMIN',
+            'datas' => false,
+        ])->render('pages/hakaksesunit/response');
+
+        $this->assertStringContainsString('Belum ada unit', $htmlEmpty);
+    }
+
+    /**
+     * Memastikan hakaksespengguna index dan response menggunakan standar portlet, tombol, dan checkbox terpadu.
+     */
+    public function testHakaksespenggunaViewsUseConsistentPortletAndCheckboxStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Hak Akses Pengguna',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'show_url' => base_url('hakaksespengguna/response/'),
+            's_user' => [
+                ['susrNama' => 'admin_test', 'susrProfil' => 'Administrator Testing'],
+            ],
+        ])->render('pages/hakaksespengguna/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tampilkan Hak Akses', $htmlIndex);
+        $this->assertStringContainsString('flaticon2-search-1', $htmlIndex);
+        $this->assertStringContainsString('Pilih Pengguna', $htmlIndex);
+        $this->assertStringContainsString('id="select_pengguna"', $htmlIndex);
+        $this->assertStringContainsString('id="btn_show"', $htmlIndex);
+        $this->assertStringContainsString('id="response"', $htmlIndex);
+
+        $renderer->resetData();
+        $htmlResponse = $renderer->setData([
+            'save_url' => base_url('hakaksespengguna/save/'),
+            'pengguna' => 'admin_test',
+            'datas' => [
+                [
+                    'sgroupNama' => 'ADMIN',
+                    'sgroupKeterangan' => 'Administrator Sistem',
+                    'sgroupSgroupNama' => 'ADMIN',
+                ],
+                [
+                    'sgroupNama' => 'OPERATOR',
+                    'sgroupKeterangan' => 'Operator Layanan',
+                    'sgroupSgroupNama' => '',
+                ],
+            ],
+        ])->render('pages/hakaksespengguna/response');
+
+        $this->assertStringContainsString('kt-portlet', $htmlResponse);
+        $this->assertStringContainsString('no-datatable', $htmlResponse);
+        $this->assertStringContainsString('btn-brand', $htmlResponse);
+        $this->assertStringContainsString('Simpan Perubahan Hak Akses', $htmlResponse);
+        $this->assertStringContainsString('kt-checkbox', $htmlResponse);
+        $this->assertStringContainsString('check_all_grup', $htmlResponse);
+        $this->assertStringContainsString('check-grup-item', $htmlResponse);
+        $this->assertStringContainsString('badge_counter_wrapper', $htmlResponse);
+        $this->assertStringContainsString('selected_count', $htmlResponse);
+        $this->assertStringContainsString('admin_test', $htmlResponse);
+
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'save_url' => base_url('hakaksespengguna/save/'),
+            'pengguna' => 'admin_test',
+            'datas' => false,
+        ])->render('pages/hakaksespengguna/response');
+
+        $this->assertStringContainsString('Belum ada grup pengguna', $htmlEmpty);
+    }
+
+    /**
+     * Memastikan laporan index dan response menggunakan standar portlet, daterange picker, dan tabel rekapitulasi.
+     */
+    public function testLaporanViewsUseConsistentPortletAndTableStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Laporan',
+            'user_group' => 'ADMIN',
+            'show_url' => base_url('laporan/response/'),
+            'tanggal' => '01-01-2026 / 31-01-2026',
+        ])->render('pages/laporan/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tampilkan Laporan', $htmlIndex);
+        $this->assertStringContainsString('Rentang Tanggal', $htmlIndex);
+        $this->assertStringContainsString('flaticon2-search-1', $htmlIndex);
+        $this->assertStringContainsString('kt_daterangepicker_2', $htmlIndex);
+        $this->assertStringContainsString('id="btn_show"', $htmlIndex);
+        $this->assertStringContainsString('id="response"', $htmlIndex);
+        $this->assertStringContainsString('laporan_empty_hint', $htmlIndex);
+
+        $renderer->resetData();
+        $htmlResponse = $renderer->setData([
+            'awal' => '2026-01-01',
+            'akhir' => '2026-01-31',
+            'datas' => [
+                [
+                    'unitNama' => 'Bidang Kemahasiswaan',
+                    'Jumlah' => 10,
+                    'TERIMA' => 5,
+                    'TOLAK' => 1,
+                    'PROSES' => 2,
+                    'SELESAI' => 2,
+                ],
+            ],
+        ])->render('pages/laporan/response');
+
+        $this->assertStringContainsString('kt-portlet', $htmlResponse);
+        $this->assertStringContainsString('Rekapitulasi Tiket per Bidang', $htmlResponse);
+        $this->assertStringContainsString('table_export', $htmlResponse);
+        $this->assertStringContainsString('no-datatable', $htmlResponse);
+        $this->assertStringContainsString('Unduh Excel', $htmlResponse);
+        $this->assertStringContainsString('thead-light', $htmlResponse);
+        $this->assertStringContainsString('laporan-total', $htmlResponse);
+        $this->assertStringContainsString('laporan-num', $htmlResponse);
+        $this->assertStringContainsString('Bidang Kemahasiswaan', $htmlResponse);
+
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'awal' => '2026-01-01',
+            'akhir' => '2026-01-31',
+            'datas' => [],
+        ])->render('pages/laporan/response');
+
+        $this->assertStringContainsString('Tidak ada tiket pada periode', $htmlEmpty);
+    }
 }
 
 

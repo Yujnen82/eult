@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-13T18:19:25+08:00",
+  "generatedAt": "2026-09-14T00:45:30+08:00",
   "title": "Design System: E-ULT v2 Metronic",
   "extensions": {
     "colorMeta": {
@@ -10,17 +10,53 @@
         "canonical": "#5d78ff",
         "tonalRamp": ["#1c2d7a", "#2940a6", "#3d57d4", "#5d78ff", "#7e94ff", "#a5b4ff", "#ced7ff", "#f0f3ff"]
       },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Cobalt Deep Hover",
+        "canonical": "#3758ff",
+        "tonalRamp": ["#122799", "#1e37bf", "#2946e6", "#3758ff", "#5f7bff", "#8aa0ff", "#bac7ff", "#eaefff"]
+      },
+      "primary-active": {
+        "role": "primary",
+        "displayName": "Cobalt Active Press",
+        "canonical": "#2a4eff",
+        "tonalRamp": ["#0f2299", "#1833bf", "#2040e6", "#2a4eff", "#5573ff", "#8098ff", "#b3c2ff", "#e6ecff"]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Cadet Slate Border",
+        "canonical": "#e2e5ec",
+        "tonalRamp": ["#4f5464", "#71778c", "#969db2", "#bcc2d3", "#d6dae5", "#e2e5ec", "#eff1f5", "#f9fafb"]
+      },
+      "secondary-hover": {
+        "role": "secondary",
+        "displayName": "Slate Soft Hover",
+        "canonical": "#f4f5f8",
+        "tonalRamp": ["#5f626c", "#848896", "#a9acb9", "#cbced7", "#e4e5eb", "#f4f5f8", "#fafafc", "#ffffff"]
+      },
       "brand-dark": {
         "role": "neutral",
         "displayName": "Midnight Governance Navy",
         "canonical": "#1a1a27",
         "tonalRamp": ["#0b0b11", "#12121c", "#1a1a27", "#242436", "#35354e", "#515174", "#77779f", "#b4b4cf"]
       },
+      "header-dark": {
+        "role": "neutral",
+        "displayName": "Governance Header Dark",
+        "canonical": "#1e1e2d",
+        "tonalRamp": ["#0d0d14", "#151520", "#1e1e2d", "#29293d", "#3b3b57", "#58587e", "#8080a8", "#bbbbd4"]
+      },
       "success": {
         "role": "secondary",
         "displayName": "Mint Civic Success",
         "canonical": "#0abb87",
         "tonalRamp": ["#044d37", "#066f50", "#08976d", "#0abb87", "#2fd1a2", "#63e0bc", "#a2eed9", "#e6f9f3"]
+      },
+      "info": {
+        "role": "secondary",
+        "displayName": "Sky Clear Info",
+        "canonical": "#5578eb",
+        "tonalRamp": ["#1b327b", "#2644a8", "#385dd8", "#5578eb", "#7894f0", "#9eb4f5", "#c8d5fa", "#edf2fe"]
       },
       "warning": {
         "role": "tertiary",
@@ -34,25 +70,59 @@
         "canonical": "#fd397a",
         "tonalRamp": ["#7b0329", "#b30b42", "#e3195b", "#fd397a", "#fe699b", "#fe9bbe", "#fed0df", "#fef0f5"]
       },
-      "bg-body": {
+      "text-primary": {
         "role": "neutral",
-        "displayName": "Canvas Muted Soft",
-        "canonical": "#f2f3f8",
-        "tonalRamp": ["#7f818b", "#a7a9b3", "#c8cad1", "#dedfe5", "#ebecee", "#f2f3f8", "#f7f8fb", "#ffffff"]
+        "displayName": "Charcoal Heading",
+        "canonical": "#48465b",
+        "tonalRamp": ["#16151c", "#24232d", "#363444", "#48465b", "#66637e", "#8b88a3", "#b5b3c6", "#e3e2ea"]
       },
       "text-body": {
         "role": "neutral",
         "displayName": "Cadet Steel Text",
         "canonical": "#646c9a",
         "tonalRamp": ["#20243d", "#33395e", "#495180", "#646c9a", "#838bb5", "#a6adcf", "#cbcfdf", "#ededf3"]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Ash Subdued Text",
+        "canonical": "#74788d",
+        "tonalRamp": ["#272931", "#3e404b", "#585b6b", "#74788d", "#9295a5", "#b2b4bf", "#d3d4dc", "#f1f1f4"]
+      },
+      "border-base": {
+        "role": "neutral",
+        "displayName": "Divider Soft Border",
+        "canonical": "#ebedf2",
+        "tonalRamp": ["#676a75", "#8c909e", "#b1b4c1", "#d3d5df", "#e3e5eb", "#ebedf2", "#f4f5f8", "#ffffff"]
+      },
+      "border-input": {
+        "role": "neutral",
+        "displayName": "Input Contour Border",
+        "canonical": "#e2e5ec",
+        "tonalRamp": ["#4f5464", "#71778c", "#969db2", "#bcc2d3", "#d6dae5", "#e2e5ec", "#eff1f5", "#f9fafb"]
+      },
+      "bg-body": {
+        "role": "neutral",
+        "displayName": "Canvas Muted Soft",
+        "canonical": "#f2f3f8",
+        "tonalRamp": ["#7f818b", "#a7a9b3", "#c8cad1", "#dedfe5", "#ebecee", "#f2f3f8", "#f7f8fb", "#ffffff"]
+      },
+      "bg-card": {
+        "role": "neutral",
+        "displayName": "Pristine White Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#808080", "#a6a6a6", "#cccccc", "#e6e6e6", "#f2f2f2", "#fafafa", "#fdfdfd", "#ffffff"]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Hero headlines dan judul besar landing publik." },
-      "headline": { "displayName": "Headline", "purpose": "Judul modul pada bilah subheader." },
-      "title": { "displayName": "Title", "purpose": "Judul kartu portlet dan modal dialog." },
-      "body": { "displayName": "Body", "purpose": "Teks paragraf, data tabel, dan label formulir." },
-      "label": { "displayName": "Label", "purpose": "Label formulir dan lencana status." }
+      "display": { "displayName": "Display", "purpose": "Hero headlines dan judul besar landing publik (2rem, 600)." },
+      "headline": { "displayName": "Headline", "purpose": "Judul modul pada bilah subheader (1.5rem, 500)." },
+      "title": { "displayName": "Title", "purpose": "Judul kartu portlet dan modal dialog (1.2rem, 500)." },
+      "subtitle": { "displayName": "Subtitle", "purpose": "Subjudul panel dan bagian penting formulir (1rem, 500)." },
+      "input-mobile": { "displayName": "Input Mobile", "purpose": "Ukuran font input pada viewport ponsel untuk mencegah auto-zoom (16px, 400)." },
+      "body": { "displayName": "Body", "purpose": "Teks paragraf, data tabel, dan instruksi formulir (13px, 300)." },
+      "label": { "displayName": "Label", "purpose": "Label formulir dan header kolom tabel (12px, 500)." },
+      "caption": { "displayName": "Caption", "purpose": "Teks sekunder dan petunjuk kecil (11px, 400)." },
+      "micro": { "displayName": "Micro", "purpose": "Timestamp dan metadata mikro (10px, 400)." }
     },
     "shadows": [
       {
@@ -91,53 +161,61 @@
       "kind": "button",
       "refersTo": "button-primary",
       "description": "Tombol aksi utama untuk pengajuan tiket, simpan data, atau validasi berkas.",
-      "html": "<button class=\"ds-btn ds-btn-primary\">Simpan & Lanjutkan</button>",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Simpan &amp; Lanjutkan</button>",
       "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; padding: 0.65rem 1.25rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s; outline: none; text-decoration: none; } .ds-btn-primary { background-color: #5d78ff; border-color: #5d78ff; color: #ffffff; } .ds-btn-primary:hover { background-color: #3758ff; border-color: #2a4eff; } .ds-btn-primary:focus-visible { box-shadow: 0 0 0 0.2rem rgba(117, 140, 255, 0.5); }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Tombol sekunder untuk aksi batal, kembali, atau opsi penunjang.",
+      "description": "Tombol aksi pendukung untuk batal atau opsi sekunder.",
       "html": "<button class=\"ds-btn ds-btn-secondary\">Batal</button>",
-      "css": ".ds-btn-secondary { background-color: #f4f5f8; border-color: #e2e5ec; color: #595d6e; } .ds-btn-secondary:hover { background-color: #e8eaef; border-color: #d8dce6; color: #48465b; } .ds-btn-secondary:focus-visible { box-shadow: 0 0 0 0.2rem rgba(226, 229, 236, 0.5); }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; padding: 0.65rem 1.25rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s; outline: none; text-decoration: none; } .ds-btn-secondary { background-color: #f4f5f8; border-color: #e2e5ec; color: #48465b; } .ds-btn-secondary:hover { background-color: #e2e5ec; color: #1a1a27; } .ds-btn-secondary:focus-visible { box-shadow: 0 0 0 0.2rem rgba(226, 229, 236, 0.5); }"
     },
     {
       "name": "Card Portlet",
       "kind": "card",
       "refersTo": "card-portlet",
-      "description": "Wadah utama untuk modul data, tabel permohonan, atau blok formulir.",
-      "html": "<div class=\"ds-portlet\"><div class=\"ds-portlet-head\"><h3 class=\"ds-portlet-title\">Data Permohonan Layanan</h3></div><div class=\"ds-portlet-body\"><p class=\"ds-portlet-text\">Silakan lengkapi berkas persyaratan sebelum tiket diproses oleh verifikator.</p></div></div>",
-      "css": ".ds-portlet { background-color: #ffffff; border-radius: 4px; box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.05); margin-bottom: 20px; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; } .ds-portlet-head { display: flex; align-items: center; justify-content: space-between; padding: 0 25px; min-height: 60px; border-bottom: 1px solid #ebedf2; } .ds-portlet-title { font-size: 1.2rem; font-weight: 500; color: #48465b; margin: 0; } .ds-portlet-body { padding: 25px; } .ds-portlet-text { font-size: 13px; font-weight: 300; color: #646c9a; margin: 0; line-height: 1.5; }"
+      "description": "Panel kontainer standar Metronic v6 untuk menyajikan formulir, tabel data, dan detail tiket.",
+      "html": "<div class=\"ds-portlet\"><div class=\"ds-portlet-head\"><h3 class=\"ds-portlet-title\">Judul Modul Layanan</h3></div><div class=\"ds-portlet-body\"><p>Konten dan formulir administrasi tersaji tertib dengan padding 25px.</p></div></div>",
+      "css": ".ds-portlet { background-color: #ffffff; border-radius: 4px; box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.05); border: 1px solid #ebedf2; font-family: 'Poppins', sans-serif; } .ds-portlet-head { padding: 15px 25px; border-bottom: 1px solid #ebedf2; min-height: 60px; display: flex; align-items: center; } .ds-portlet-title { margin: 0; font-size: 1.2rem; font-weight: 500; color: #48465b; } .ds-portlet-body { padding: 25px; color: #646c9a; font-size: 13px; font-weight: 300; line-height: 1.5; }"
     },
     {
-      "name": "Input Text Field",
+      "name": "Text Input Field",
       "kind": "input",
       "refersTo": "input-base",
-      "description": "Kolom input teks standar untuk formulir administrasi dan pencarian tiket.",
-      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Masukkan nomor tiket / identitas...\" />",
-      "css": ".ds-input { display: block; width: 100%; height: calc(1.5em + 1.3rem + 2px); padding: 0.65rem 1rem; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 400; line-height: 1.5; color: #495057; background-color: #ffffff; border: 1px solid #e2e5ec; border-radius: 4px; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; outline: none; box-sizing: border-box; } .ds-input:focus { border-color: #9aabff; box-shadow: 0 0 0 0.2rem rgba(88, 103, 221, 0.25); } .ds-input::placeholder { color: #74788d; opacity: 1; }"
+      "description": "Kotak input teks dan formulir dengan garis batas presisi 1px.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Masukkan kata kunci pencarian...\">",
+      "css": ".ds-input { width: 100%; height: calc(1.5em + 1.3rem + 2px); padding: 0.65rem 1rem; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 400; color: #48465b; background-color: #ffffff; border: 1px solid #e2e5ec; border-radius: 4px; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; outline: none; } .ds-input:focus { border-color: #9aabff; box-shadow: 0 0 0 0.2rem rgba(93, 120, 255, 0.25); } .ds-input::placeholder { color: #74788d; }"
     },
     {
-      "name": "Status Badge Success",
+      "name": "Unified Pill Badge",
       "kind": "chip",
-      "refersTo": null,
-      "description": "Lencana status verifikasi tuntas atau tiket selesai diproses.",
-      "html": "<span class=\"ds-badge ds-badge-success\">Tervalidasi</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 500; padding: 0.35rem 0.65rem; border-radius: 2px; } .ds-badge-success { background-color: rgba(10, 187, 135, 0.1); color: #0abb87; }"
+      "refersTo": "badge-unified",
+      "description": "Lencana status berlatar transparan lembut 10% dengan teks kontras untuk status tiket dan grup modul.",
+      "html": "<span class=\"ds-badge ds-badge-unified-brand\">Administrator</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; padding: 0.35rem 0.85rem; border-radius: 2rem; } .ds-badge-unified-brand { background-color: rgba(93, 120, 255, 0.1); color: #5d78ff; }"
     },
     {
-      "name": "Status Badge Danger",
-      "kind": "chip",
-      "refersTo": null,
-      "description": "Lencana status berkas ditolak, tidak valid, atau dikarantina.",
-      "html": "<span class=\"ds-badge ds-badge-danger\">Ditolak</span>",
-      "css": ".ds-badge-danger { background-color: rgba(253, 57, 122, 0.1); color: #fd397a; }"
+      "name": "Metronic Checkbox",
+      "kind": "custom",
+      "refersTo": "checkbox-metronic",
+      "description": "Checkbox kustom Metronic v6 untuk tabel seleksi izin modul dan layanan.",
+      "html": "<label class=\"ds-checkbox\"><input type=\"checkbox\" checked><span class=\"ds-checkbox-mark\"></span></label>",
+      "css": ".ds-checkbox { display: inline-flex; position: relative; cursor: pointer; user-select: none; margin: 0; padding-left: 20px; } .ds-checkbox input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; } .ds-checkbox-mark { position: absolute; top: 0; left: 0; height: 18px; width: 18px; background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 4px; transition: background-color 0.15s, border-color 0.15s; } .ds-checkbox:hover input ~ .ds-checkbox-mark { border-color: #5d78ff; } .ds-checkbox input:checked ~ .ds-checkbox-mark { background-color: #5d78ff; border-color: #5d78ff; } .ds-checkbox-mark:after { content: ''; position: absolute; display: none; left: 6px; top: 2px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); } .ds-checkbox input:checked ~ .ds-checkbox-mark:after { display: block; }"
+    },
+    {
+      "name": "Data Matrix Table",
+      "kind": "custom",
+      "refersTo": "table-matrix",
+      "description": "Tabel matriks operasional dengan sticky thead dan sorotan baris aktif.",
+      "html": "<div class=\"ds-table-wrap\"><table class=\"ds-table\"><thead><tr><th>#</th><th>Nama Modul</th><th>Label Tampilan</th><th>Grup</th></tr></thead><tbody><tr class=\"ds-tr-selected\"><td>✓</td><td><code>hakakses</code></td><td>Hak Akses</td><td><span class=\"ds-badge ds-badge-unified-brand\">Admin</span></td></tr></tbody></table></div>",
+      "css": ".ds-table-wrap { max-height: 400px; overflow-y: auto; border: 1px solid #ebedf2; border-radius: 4px; } .ds-table { width: 100%; border-collapse: collapse; font-family: 'Poppins', sans-serif; font-size: 13px; } .ds-table th { position: sticky; top: 0; background: #f7f8fa; padding: 12px 16px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: #74788d; letter-spacing: 0.5px; border-bottom: 1px solid #ebedf2; text-align: left; } .ds-table td { padding: 12px 16px; border-bottom: 1px solid #ebedf2; color: #48465b; } .ds-tr-selected { background-color: rgba(93, 120, 255, 0.04); }"
     }
   ],
   "narrative": {
     "northStar": "The Civic Academic Registry",
-    "overview": "Sistem desain E-ULT v2 memadukan ketertiban birokrasi universitas dengan kejelasan interaksi digital modern. Setiap bidang visual dirancang untuk memancarkan kepastian, kewibawaan institusional, dan transparansi bagi seluruh sivitas akademika Universitas Mulawarman serta masyarakat umum. Fondasi visual dibangun di atas tema Metronic v6 (Bootstrap 4 & KT Framework) dengan tata kelola panel portlet yang rapi, garis sekat 1px yang presisi, dan skema kontras bertingkat antara kanvas abu-abu lembut (#f2f3f8) dan permukaan portlet putih bersih (#ffffff).",
+    "overview": "Sistem desain E-ULT v2 memadukan ketertiban birokrasi universitas dengan kejelasan interaksi digital modern. Setiap bidang visual dirancang untuk memancarkan kepastian, kewibawaan institusional, dan transparansi bagi seluruh sivitas akademika Universitas Mulawarman serta masyarakat umum. Antarmuka tidak mengalihkan perhatian dengan ornamen dekoratif, melainkan mengarahkan fokus pengguna pada status berkas, instruksi syarat yang jelas, dan alur permohonan yang terukur.\n\nFondasi visual dibangun di atas tema Metronic v6 (Bootstrap 4 & KT Framework) dengan tata kelola panel portlet yang rapi, garis sekat 1px yang presisi, dan skema kontras bertingkat antara kanvas abu-abu lembut (#f2f3f8) dan permukaan portlet putih bersih (#ffffff). Setiap komponen antarmuka dirancang untuk operasional data yang intensif tanpa menimbulkan kelelahan kognitif bagi petugas operator maupun pemohon publik.\n\nAnti-referensi visual: Hindari gradien warna neon mencolok, bayangan melayang (dramatic 3D drop-shadows), animasi berlebih yang memperlambat pemrosesan berkas, dan sudut tumpul ekstrem yang mengaburkan kesan formal institusi kampus.",
     "keyCharacteristics": [
       "Struktur Portlet Bersekat Presisi: Konten dikelompokkan ke dalam portlet mandiri dengan header dan footer bergaris batas halus.",
       "Keterbacaan Tipografi Ringan (Light & Crisp): Teks bodi Poppins bobot 300 pada 13px memberikan kerapatan data yang nyaman dibaca.",

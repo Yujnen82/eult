@@ -417,6 +417,68 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('ts_remove_row', $htmlPengguna);
         $this->assertStringContainsString('ts_reset_row', $htmlPengguna);
     }
+
+    /**
+     * Memastikan modulgroup index dan form menggunakan standar portlet, tombol, dan lokalisasi terpadu.
+     */
+    public function testModulgroupViewsUseConsistentPortletAndTableStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        // 1. Modulgroup Index dengan Data
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Modul Group',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('modulgroup/create/'),
+            'update_url' => base_url('modulgroup/update/'),
+            'delete_url' => base_url('modulgroup/delete/'),
+            'datas' => [
+                [
+                    'susrmdgroupNama' => 'admin',
+                    'susrmdgroupDisplay' => 'Administrator',
+                    'susrmdgroupIcon' => '<i class="la la-desktop"></i>',
+                ]
+            ],
+        ])->render('pages/modulgroup/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tambah Data', $htmlIndex);
+        $this->assertStringContainsString('thead-light', $htmlIndex);
+        $this->assertStringContainsString('btn-label-brand', $htmlIndex);
+        $this->assertStringContainsString('btn-label-danger', $htmlIndex);
+        $this->assertStringContainsString('ts_remove_row', $htmlIndex);
+        $this->assertStringContainsString('Ubah', $htmlIndex);
+        $this->assertStringContainsString('Hapus', $htmlIndex);
+
+        // 2. Modulgroup Index saat Data Kosong
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'page_judul' => 'Modul Group',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('modulgroup/create/'),
+            'update_url' => base_url('modulgroup/update/'),
+            'delete_url' => base_url('modulgroup/delete/'),
+            'datas' => false,
+        ])->render('pages/modulgroup/index');
+
+        $this->assertStringContainsString('Belum ada data', $htmlEmpty);
+
+        // 3. Modulgroup Form
+        $renderer->resetData();
+        $htmlForm = $renderer->setData([
+            'page_judul' => 'Modul Group',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'save_url' => base_url('modulgroup/save/'),
+            'status_page' => 'Create',
+            'datas' => false,
+        ])->render('pages/modulgroup/form');
+
+        $this->assertStringContainsString('Simpan', $htmlForm);
+        $this->assertStringContainsString('Batal', $htmlForm);
+        $this->assertStringContainsString('btn-brand', $htmlForm);
+    }
 }
 
 

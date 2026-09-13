@@ -53,10 +53,10 @@ class Cektiket extends BaseController
             'page_judul'  => 'Cek Tiket',
             'datas'       => $datas,
             'history'     => $riwayat,
-            'output_url'  => $output !== false ? site_url('cektiket/loadpdf') . '/' . $output['archiveFile'] : false,
+            'output_url'  => $output !== false ? site_url('cektiket/loadpdf') . '/' . $kunci : false,
             'save_url'    => site_url('cektiket/save_replies') . '/',
             'close_url'   => site_url('cektiket/close') . '/' . $kunci,
-            'load_attach' => site_url('cektiket/loadattach'),
+            'load_attach' => site_url('cektiket/loadattach') . '/' . $kunci,
             'replies'     => $balasan,
             'user_group'  => $datas['ticketName'],
             'breadcrumb'  => 'cektiket',
@@ -109,14 +109,17 @@ class Cektiket extends BaseController
         $nomorTiket = (string) $this->request->getPost('nomorTiket');
         $param      = ['ratingNilai' => $rating, 'ratingTicketId' => $nomorTiket];
 
-        $datas = $this->tiket->byId("ticketTrackingId = '" . $nomorTiket . "'");
+        $datas = $this->tiket->byId(['ticketTrackingId' => $nomorTiket]);
         $cek   = $this->tiket->ambilSatu('d_rating', ['ratingTicketId' => $nomorTiket]);
 
         $proses = empty($cek)
             ? $this->tiket->tambah('d_rating', $param)
             : $this->tiket->ubah('d_rating', $param, ['ratingTicketId' => $nomorTiket]);
 
-        $output = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $nomorTiket . "' AND (archiveJenis = 'OUTPUT' or archiveJenis = 'TTD')");
+        $output = $this->tiket->tabelBuilder('d_archive')
+            ->where('archiveTrackingId', $nomorTiket)
+            ->whereIn('archiveJenis', ['OUTPUT', 'TTD'])
+            ->get()->getRowArray() ?? false;
         $lampiran = $output !== false ? $output['archiveFile'] : false;
 
         if ($datas !== false) {
@@ -142,19 +145,51 @@ class Cektiket extends BaseController
         exit;
     }
 
-    public function loadpdf(string $namaFile = '')
+    /**
+     * Menyajikan PDF output milik tiket yang kuncinya dipegang pemohon.
+     * Nama berkas ditentukan dari relasi tiket (bukan dari URL) agar
+     * berkas tiket lain tidak bisa diunduh tanpa kunci.
+     */
+    public function loadpdf(string $kunci = '')
     {
-        $lokasi = WRITEPATH . 'uploads/ticketing/' . basename($namaFile);
+        $nomorTiket = $this->enkripsi->decode($kunci);
+        $arsip      = $nomorTiket === false
+            ? false
+            : $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $nomorTiket, 'archiveJenis' => 'OUTPUT']);
+
+        if ($arsip === false) {
+            return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
+        }
+
+        $lokasi = WRITEPATH . 'uploads/ticketing/' . basename((string) $arsip['archiveFile']);
+
+        if (! is_file($lokasi)) {
+            return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
+        }
 
         return $this->response
             ->setHeader('Content-type', 'application/pdf')
-            ->setHeader('Content-Disposition', 'inline; filename="' . basename($namaFile) . '"')
-            ->setBody(file_exists($lokasi) ? file_get_contents($lokasi) : '');
+            ->setHeader('Content-Disposition', 'inline; filename="' . basename($lokasi) . '"')
+            ->setBody(file_get_contents($lokasi));
     }
 
-    public function loadattach(string $namaFile = '')
+    /**
+     * Menyajikan lampiran chat hanya bila berkas tersebut benar-benar
+     * terasosiasi dengan tiket hasil decode kunci.
+     */
+    public function loadattach(string $kunci = '', string $namaFile = '')
     {
-        $lokasi = WRITEPATH . 'uploads/chat/' . basename($namaFile);
+        $nomorTiket = $this->enkripsi->decode($kunci);
+        $namaFile   = basename($namaFile);
+        $lampiran   = ($nomorTiket === false || $namaFile === '')
+            ? false
+            : $this->tiket->ambilSatu('d_replies', ['repliesTicketId' => $nomorTiket, 'repliesFile' => $namaFile]);
+
+        if ($lampiran === false) {
+            return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
+        }
+
+        $lokasi = WRITEPATH . 'uploads/chat/' . $namaFile;
 
         if (! is_file($lokasi)) {
             return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');

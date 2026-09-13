@@ -171,7 +171,7 @@ License: You must have a valid license purchased only from themeforest(the above
                                                     
                                                     <hr>
 
-                                                    <iframe src="<?= base_url() ?>validitas/loadpdf/<?= $datas != false ? $datas['archiveFile'] : '' ?>" frameborder="0" width="100%" height="600"></iframe>
+                                                    <iframe src="<?= esc($loadpdf_url ?? '') ?>" frameborder="0" width="100%" height="600"></iframe>
                                                 </div>
                                             </div>
                                         </div>

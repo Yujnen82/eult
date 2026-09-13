@@ -30,7 +30,7 @@ $routes->group('cektiket', static function ($routes) {
     $routes->post('rating', 'Cektiket::rating');
     $routes->get('cetakterima/(:any)', 'Cektiket::cetakterima/$1');
     $routes->get('loadpdf/(:any)', 'Cektiket::loadpdf/$1');
-    $routes->get('loadattach/(:any)', 'Cektiket::loadattach/$1');
+    $routes->get('loadattach/(:segment)/(:segment)', 'Cektiket::loadattach/$1/$2');
 });
 
 // Validasi surat publik via QR (setara $route['validitas/(:any)'] CI3)

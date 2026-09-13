@@ -1080,9 +1080,54 @@ class Ticketing extends BaseController
         eult_message_kirim($this->judul . ' Gagal Dihapus, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
     }
 
+    /**
+     * Memeriksa hak akses staf atas tiket pemilik berkas, memakai
+     * mekanisme otorisasi yang sudah dipakai controller ini
+     * (grup ADMIN/OPERATOR, disposisi unit, atau unit pemilik tiket).
+     */
+    private function bolehAksesTiket(string $idTiket): bool
+    {
+        $grup = (string) ($this->pengguna['susrSgroupNama'] ?? '');
+
+        if ($idTiket === '' || $grup === '') {
+            return false;
+        }
+
+        if ($grup === 'ADMIN' || strpos($grup, 'OPERATOR') !== false) {
+            return true;
+        }
+
+        if ($this->tiket->disposisiById(['ticketTrackingId' => $idTiket, 'sgroupunitSgroupNama' => $grup]) !== false) {
+            return true;
+        }
+
+        $datas     = $this->tiket->byId(['ticketTrackingId' => $idTiket]);
+        $unitTiket = $datas !== false ? ($datas['ticketAssign'] ?? false) : false;
+        $unitGrup  = $this->tiket->getUnitByHakakses($grup);
+
+        if ($unitTiket === false || $unitGrup === false) {
+            return false;
+        }
+
+        foreach ($unitGrup as $unit) {
+            if ((string) $unit['sgroupunitUnitId'] === (string) $unitTiket) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function loadattach(string $namaFile = '')
     {
-        $lokasi = WRITEPATH . 'uploads/chat/' . basename($namaFile);
+        $namaFile = basename($namaFile);
+        $lampiran = $this->tiket->ambilSatu('d_replies', ['repliesFile' => $namaFile]);
+
+        if ($lampiran === false || ! $this->bolehAksesTiket((string) $lampiran['repliesTicketId'])) {
+            return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+        }
+
+        $lokasi = WRITEPATH . 'uploads/chat/' . $namaFile;
 
         if (! is_file($lokasi)) {
             return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
@@ -1095,12 +1140,23 @@ class Ticketing extends BaseController
 
     public function loadpdf(string $namaFile = '')
     {
-        $lokasi = WRITEPATH . 'uploads/ticketing/' . basename($namaFile);
+        $namaFile = basename($namaFile);
+        $arsip    = $this->tiket->ambilSatu('d_archive', ['archiveFile' => $namaFile]);
+
+        if ($arsip === false || ! $this->bolehAksesTiket((string) $arsip['archiveTrackingId'])) {
+            return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+        }
+
+        $lokasi = WRITEPATH . 'uploads/ticketing/' . $namaFile;
+
+        if (! is_file($lokasi)) {
+            return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
+        }
 
         return $this->response
             ->setHeader('Content-type', 'application/pdf')
-            ->setHeader('Content-Disposition', 'inline; filename="' . basename($namaFile) . '"')
-            ->setBody(file_exists($lokasi) ? file_get_contents($lokasi) : '');
+            ->setHeader('Content-Disposition', 'inline; filename="' . $namaFile . '"')
+            ->setBody(file_get_contents($lokasi));
     }
 
     public function loadimage(string $kunci = '')

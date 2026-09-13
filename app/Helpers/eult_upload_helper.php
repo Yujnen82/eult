@@ -58,7 +58,9 @@ if (! function_exists('eult_upload_ticket')) {
 if (! function_exists('eult_upload_custom')) {
     /**
      * Unggah generik untuk field arbitrer (porting uploadcustom CI3).
-     * Mengembalikan instance File yang sudah dipindah.
+     * Mengembalikan instance File pada lokasi tujuan, sehingga
+     * getFilename() berisi nama berkas sebenarnya (bukan nama
+     * temporer upload PHP seperti /tmp/phpXXXX).
      *
      * @param array{url:string,type:string,size:int,namafile:string} $konfig
      */
@@ -89,8 +91,9 @@ if (! function_exists('eult_upload_custom')) {
             eult_message_kirim('Ukuran file melebihi batas ' . round($konfig['size'] / 1024) . ' MB.', 'error');
         }
 
-        $berkas->move($tujuan, $konfig['namafile'] . '.' . $ekstensi, true);
+        $namaBaru = $konfig['namafile'] . '.' . $ekstensi;
+        $berkas->move($tujuan, $namaBaru, true);
 
-        return $berkas;
+        return new \CodeIgniter\Files\File($tujuan . $namaBaru, true);
     }
 }

@@ -125,6 +125,92 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('rentangTanggal', $html);
         $this->assertStringContainsString('layanan', $html);
     }
+
+    public function testTicketDetailWorkstationRendersApplicantAndDocumentPanels(): void
+    {
+        $renderer = service('renderer');
+        $renderer->resetData();
+        $html = $renderer->setData([
+            'page_judul' => 'Rincian Permohonan Tiket',
+            'ticket' => (object)[
+                'ticketTrackingId' => 'TK-2026-777',
+                'ticketName' => 'Ahmad Fauzi',
+                'ticketEmail' => 'ahmad@unmul.ac.id',
+                'ticketPhone' => '08123456789',
+                'ticketAddress' => 'Samarinda',
+                'ticketCreated' => '2026-09-13 09:00:00',
+                'ticketSubject' => 'Permohonan Surat Keterangan Pengganti Ijazah',
+                'ticketStatus' => 3,
+                'statusNama' => 'Dalam Proses',
+                'statusColor' => 'info',
+                'categoryNama' => 'Layanan Kemahasiswaan',
+                'sCatNama' => 'Surat Keterangan Pengganti Ijazah Rusak/Hilang',
+                'unitNama' => 'Biro Akademik',
+            ],
+            'files' => [],
+            'history' => [],
+            'replies' => [],
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'key' => 'test-key',
+        ])->render('pages/ticketing/detail');
+
+        $this->assertStringContainsString('Data Pemohon', $html);
+        $this->assertStringContainsString('Dokumen Persyaratan', $html);
+        $this->assertStringContainsString('TK-2026-777', $html);
+    }
+
+    public function testTicketDetailWorkstationRendersWithLegacyDatasArray(): void
+    {
+        $renderer = service('renderer');
+        $renderer->resetData();
+        $html = $renderer->setData([
+            'page_judul' => 'Rincian Permohonan Tiket',
+            'datas' => [
+                'ticketTrackingId' => 'TK-2026-888',
+                'ticketName' => 'Dewi Lestari',
+                'ticketEmail' => 'dewi@unmul.ac.id',
+                'ticketNoHp' => '08129876543',
+                'ticketAddress' => 'Samarinda',
+                'ticketCreated' => '2026-09-13 11:00:00',
+                'ticketSubject' => 'Permohonan Legalisir',
+                'ticketStatus' => 2,
+                'statusNama' => 'Disposisi',
+                'statusColor' => 'warning',
+                'categoryNama' => 'Layanan Akademik',
+                'sCatNama' => 'Legalisir Ijazah',
+                'unitNama' => 'Biro Akademik',
+            ],
+            'archive_url' => 'http://example.com/ticketing/loadpdf/dokumen.pdf',
+            'output_url' => false,
+            'history' => [
+                (object)[
+                    'tglHistory' => '2026-09-13 11:30:00',
+                    'detailHistory' => 'Tiket didisposisikan ke Biro Akademik',
+                ]
+            ],
+            'replies' => [
+                (object)[
+                    'repliesStatus' => 'USER',
+                    'repliesDate' => '2026-09-13 11:45:00',
+                    'repliesBy' => 'Dewi Lestari',
+                    'repliesMessage' => 'Mohon bantuan proses legalisir berkas ijazah saya.',
+                    'repliesFile' => '',
+                ]
+            ],
+            'user_group' => ['susrSgroupNama' => 'ADMIN', 'susrProfil' => 'Admin Layanan'],
+            'worker' => [],
+            'kunci' => 'kunci-tes',
+            'mhs' => 'Dewi Lestari - 1801015001 - FKIP',
+        ])->render('pages/ticketing/detail');
+
+        $this->assertStringContainsString('Data Pemohon', $html);
+        $this->assertStringContainsString('Dokumen Persyaratan', $html);
+        $this->assertStringContainsString('TK-2026-888', $html);
+        $this->assertStringContainsString('Dewi Lestari', $html);
+        $this->assertStringContainsString('Linimasa Disposisi & Riwayat Status', $html);
+        $this->assertStringContainsString('Tanggapan & Aksi Tiket', $html);
+        $this->assertStringContainsString('dokumen.pdf', $html);
+    }
 }
 
 

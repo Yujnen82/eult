@@ -44,7 +44,7 @@
             </div>
 
             <!--begin::Table Section-->
-            <div class="table-responsive border rounded" style="max-height: 65vh; overflow-y: auto;">
+            <div class="table-responsive border rounded" style="max-height: 65vh; overflow-y: auto; scroll-behavior: smooth;">
                 <table class="table table-hover table-striped mb-0 no-datatable" id="table_hakakses_modul" style="min-width: 620px;">
                     <thead class="thead-light">
                         <tr style="position: sticky; top: 0; background-color: #f7f8fa; z-index: 10; box-shadow: inset 0 -1px 0 #ebedf2;">

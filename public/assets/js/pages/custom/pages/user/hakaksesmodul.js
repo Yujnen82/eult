@@ -76,6 +76,12 @@ var FormCustom = function() {
                 if (isMatch) visibleCount++;
             });
 
+            // Scroll halus ke atas tabel saat memfilter kata kunci
+            var $tableContainer = $('#table_hakakses_modul').parent();
+            if ($tableContainer.length && $tableContainer.scrollTop() > 0) {
+                $tableContainer[0].scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
             if (visibleCount === 0 && $('.matrix-row').length > 0) {
                 $('#empty_search_row').show();
             } else {
@@ -135,10 +141,22 @@ var FormCustom = function() {
                 FormCustom.init();
 
                 // Scroll halus ke tabel matriks saat form_show dimuat
-                if ($form.attr('id') === 'form_show' && $('#response').length) {
-                    $('html, body').animate({
-                        scrollTop: Math.max(0, $('#response').offset().top - 135)
-                    }, 350);
+                if ($form.attr('id') === 'form_show') {
+                    var responseEl = document.getElementById('response');
+                    if (responseEl) {
+                        var isReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                        if (!isReducedMotion && typeof responseEl.scrollIntoView === 'function') {
+                            responseEl.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        } else if (!isReducedMotion) {
+                            var targetTop = Math.max(0, $(responseEl).offset().top - 135);
+                            $('html, body').stop().animate({ scrollTop: targetTop }, 400, 'swing');
+                        } else {
+                            window.scrollTo(0, Math.max(0, $(responseEl).offset().top - 135));
+                        }
+                    }
                 }
             },
             error: function() {

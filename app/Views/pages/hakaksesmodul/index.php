@@ -2,6 +2,20 @@
 <?= $this->include('layouts/subheader') ?>
 <!-- END: Subheader -->
 
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+    #response {
+        scroll-margin-top: 135px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+    }
+</style>
+
 <!-- begin:: Content -->
 <div class="kt-container kt-container--fluid kt-grid__item kt-grid__item--fluid">
     <div class="row">

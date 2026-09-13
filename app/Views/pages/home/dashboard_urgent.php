@@ -12,7 +12,7 @@
     </div>
     <div class="kt-portlet__body p-0">
         <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0">
+            <table class="table table-striped table-hover mb-0 no-datatable">
                 <thead class="thead-light">
                     <tr>
                         <th style="font-size: 12px;">Nomor Tiket</th>

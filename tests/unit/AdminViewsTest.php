@@ -547,6 +547,44 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Batal', $htmlForm);
         $this->assertStringContainsString('btn-brand', $htmlForm);
     }
+
+    /**
+     * Memastikan layout template menyertakan eult-datatable.js dan tabel khusus memiliki guard no-datatable.
+     */
+    public function testTemplateIncludesEultDataTableScriptAndExcludesSpecificTables(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        // 1. Periksa file template.php
+        $renderer->resetData();
+        $htmlTemplate = $renderer->setData([
+            'content' => '<p>Konten Tes</p>',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'notiftiket' => [],
+            'menus' => [],
+            'susrProfil' => 'Admin',
+            'susrSgroupNama' => 'ADMIN',
+        ])->render('layouts/template');
+
+        $this->assertStringContainsString('datatables.bundle.js', $htmlTemplate);
+        $this->assertStringContainsString('eult-datatable.js', $htmlTemplate);
+
+        // 2. Periksa dashboard urgent memiliki guard no-datatable
+        $renderer->resetData();
+        $htmlUrgent = $renderer->setData([
+            'tiket_urgent' => [
+                [
+                    'ticketTrackingId' => 'URG-001',
+                    'ticketName' => 'Budi',
+                    'unitNama' => 'Fakultas Teknik',
+                    'statusNama' => 'Baru',
+                    'ticketCreated' => '2026-09-13 10:00:00',
+                ]
+            ],
+        ])->render('pages/home/dashboard_urgent');
+
+        $this->assertStringContainsString('no-datatable', $htmlUrgent);
+    }
 }
 
 

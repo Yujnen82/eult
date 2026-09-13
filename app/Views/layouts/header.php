@@ -54,7 +54,7 @@
 							</div>
 						</div>
 					</a>
-					<?php if (session('logged_in')['susrSgroupNama_ori'] !== 'USER') : ?>
+					<?php if ((session('logged_in')['susrSgroupNama_ori'] ?? '') !== 'USER') : ?>
 						<a href="/home/ubahpass" class="kt-notification__item">
 							<div class="kt-notification__item-icon">
 								<i class="flaticon2-gear kt-font-warning"></i>

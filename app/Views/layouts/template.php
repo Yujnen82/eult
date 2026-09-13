@@ -175,6 +175,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	<!--begin::Page Vendors -->
 	<script src="<?= base_url(); ?>assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/plugins/custom/datatables/datatables.bundle.js" type="text/javascript"></script>
+	<script src="<?= base_url(); ?>assets/js/pages/eult-datatable.js?v=<?= date('YmdHis') ?>" type="text/javascript"></script>
 	<!--end::Page Vendors -->
 	<!--begin::Page Snippets -->
 	<script src="<?= base_url(); ?>assets/plugins/custom/flot/flot.bundle.js" type="text/javascript"></script>

@@ -26,7 +26,7 @@
 
                 <div class="kt-portlet__body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover table-striped mb-0" id="table_ticketing">
+                        <table class="table table-hover table-striped mb-0 no-datatable" id="table_ticketing">
                             <thead class="thead-light">
                                 <tr>
                                     <th style="width: 22%; font-size: 12px; vertical-align: middle;">Nomor Tracking / Pemohon</th>

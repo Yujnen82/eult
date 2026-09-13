@@ -479,6 +479,74 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Batal', $htmlForm);
         $this->assertStringContainsString('btn-brand', $htmlForm);
     }
+
+    /**
+     * Memastikan modul index dan form menggunakan standar portlet, tombol, dan lokalisasi terpadu.
+     */
+    public function testModulViewsUseConsistentPortletAndTableStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        // 1. Modul Index dengan Data
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Modul',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('modul/create/'),
+            'update_url' => base_url('modul/update/'),
+            'delete_url' => base_url('modul/delete/'),
+            'datas' => [
+                [
+                    'susrmodulNama' => 'modul',
+                    'susrmdgroupDisplay' => 'Administrator',
+                    'susrmodulNamaDisplay' => 'Manajemen Modul',
+                    'susrmodulIsLogin' => 1,
+                    'susrmodulUrut' => 2,
+                ]
+            ],
+        ])->render('pages/modul/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tambah Data', $htmlIndex);
+        $this->assertStringContainsString('thead-light', $htmlIndex);
+        $this->assertStringContainsString('btn-label-brand', $htmlIndex);
+        $this->assertStringContainsString('btn-label-danger', $htmlIndex);
+        $this->assertStringContainsString('ts_remove_row', $htmlIndex);
+        $this->assertStringContainsString('Ubah', $htmlIndex);
+        $this->assertStringContainsString('Hapus', $htmlIndex);
+        $this->assertStringContainsString('Wajib Login', $htmlIndex);
+
+        // 2. Modul Index saat Data Kosong
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'page_judul' => 'Modul',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('modul/create/'),
+            'update_url' => base_url('modul/update/'),
+            'delete_url' => base_url('modul/delete/'),
+            'datas' => false,
+        ])->render('pages/modul/index');
+
+        $this->assertStringContainsString('Belum ada data', $htmlEmpty);
+
+        // 3. Modul Form
+        $renderer->resetData();
+        $htmlForm = $renderer->setData([
+            'page_judul' => 'Modul',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'save_url' => base_url('modul/save/'),
+            'status_page' => 'Create',
+            'datas' => false,
+            's_user_modul_group_ref' => [
+                ['susrmdgroupNama' => 'admin', 'susrmdgroupDisplay' => 'Administrator']
+            ],
+        ])->render('pages/modul/form');
+
+        $this->assertStringContainsString('Simpan', $htmlForm);
+        $this->assertStringContainsString('Batal', $htmlForm);
+        $this->assertStringContainsString('btn-brand', $htmlForm);
+    }
 }
 
 

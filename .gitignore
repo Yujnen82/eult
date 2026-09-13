@@ -77,9 +77,13 @@ php_errors.log
 # Test Files
 #-------------------------
 /tests/coverage*
+/writable/phpunit-cache/
 
 # Don't save phpunit under version control.
 /phpunit
+
+# Knowledge graph generated files
+graphify-out/
 
 #-------------------------
 # Composer

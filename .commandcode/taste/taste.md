@@ -1,4 +1,11 @@
 - Prefers communication in Bahasa Indonesia. Confidence: 0.8
 - Prefers working directly in the main checkout without git worktree/branch isolation when the project is still a fresh app-starter/scaffold. Confidence: 0.7
 - Prefers previewing/trying web apps via a FlyEnv local deployment. Confidence: 0.7
+- Gives terse prompts (e.g. "analisa <URL> tidak ada file") that name only a symptom or URL, and expects the agent to autonomously trace the full root cause across code, database, and live deployment before proposing a fix. Confidence: 0.6
 - Prefers exposing FlyEnv local sites via Cloudflare Tunnel public domain when presenting/demoing. Confidence: 0.7
+- Security-conscious: before accepting a proposed fix, probes its security implications (e.g. asks whether leaving filenames unencrypted is safe) and expects a threat analysis backed by evidence rather than a simple yes/no. Confidence: 0.6
+- Prefers real server-side ownership/authorization checks (validate the file against its ticket relation in the DB) over security-by-obscurity measures such as encrypting/randomizing filenames. Confidence: 0.6
+- When given a list of proposed fixes, picks the subset to delegate (e.g. "validasi kepemilikan dan patch helper upload") and handles data/DB steps himself ("repair 1 DB sudah saya perbaiki"). Confidence: 0.5
+- Expects code changes to be test-backed: write failing regression tests first, implement, then run the full test suite green before reporting done. Confidence: 0.5
+- Expects fixes to be verified against the running local deployment (curl checks of real URLs, including unauthenticated access), not just unit tests. Confidence: 0.5
+- Tracks remaining security findings as a spec/checklist document in `.kiro/specs/.../bugfix.md` and expects work to follow those items and report which remain. Confidence: 0.5

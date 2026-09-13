@@ -44,14 +44,26 @@ $userGroup      = $user_group ?? [];
 $userGroupName  = is_array($userGroup) ? ($userGroup['susrSgroupNama'] ?? 'ADMIN') : ($userGroup->susrSgroupNama ?? 'ADMIN');
 $userProfilName = is_array($userGroup) ? ($userGroup['susrProfil'] ?? 'Petugas Layanan') : ($userGroup->susrProfil ?? 'Petugas Layanan');
 
-// Kunci terenkripsi & URL aksi
-$encKey      = $key ?? ($kunci ?? '');
+// Resolusi multi-lapis untuk $encKey agar selalu tersedia pada runtime controller
+$closeUrl = $close_url ?? '';
+$encKey   = $key ?? ($kunci ?? '');
+if (empty($encKey) && !empty($closeUrl)) {
+    $encKey = basename(parse_url($closeUrl, PHP_URL_PATH));
+}
+if (empty($encKey) && !empty($trackingId) && $trackingId !== '-') {
+    try {
+        $encKey = service('enkripsi')->encode($trackingId);
+    } catch (\Throwable $e) {
+        $encKey = '';
+    }
+}
+
+$closeUrl    = !empty($closeUrl) ? $closeUrl : (!empty($encKey) ? site_url('ticketing/close/' . $encKey) : '#');
 $cetakTerima = $cetakterima ?? (!empty($encKey) ? site_url('ticketing/cetakterima/' . $encKey) : '#');
 $surveyUrl   = 'https://docs.google.com/forms/d/e/1FAIpQLSe4Q8KLdpwCwx7CI3-IfS_YgrtNpc-tHeH14Ss75CkXyTaqRQ/viewform';
 $archiveUrl  = $archive_url ?? false;
 $outputUrl   = $output_url ?? false;
 $saveUrl     = $save_url ?? site_url('ticketing/save_replies/');
-$closeUrl    = $close_url ?? (!empty($encKey) ? site_url('ticketing/close/' . $encKey) : '#');
 $loadAttach  = $load_attach ?? site_url('ticketing/loadattach');
 
 // Riwayat & balasan percakapan
@@ -462,16 +474,16 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
                                     <i class="la la-paper-plane mr-1"></i> Kirim Tanggapan
                                 </button>
                                 <?php if (!empty($encKey) && $userGroupName !== 'USER'): ?>
-                                    <a href="<?= site_url('ticketing/terima/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold" id="btn-verifikasi-cepat" title="Verifikasi berkas persyaratan">
+                                    <a href="<?= site_url('ticketing/terima/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-terima" id="btn-verifikasi-cepat" title="Verifikasi berkas persyaratan">
                                         <i class="la la-check text-success mr-1"></i> Verifikasi Berkas
                                     </a>
-                                    <a href="<?= site_url('ticketing/assign/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold" title="Disposisikan tiket ke unit kerja">
+                                    <a href="<?= site_url('ticketing/assign/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Disposisi Tiket Layanan" title="Disposisikan tiket ke unit kerja">
                                         <i class="la la-share text-primary mr-1"></i> Disposisikan
                                     </a>
-                                    <a href="<?= site_url('ticketing/createSurat/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold" title="Buat draf surat resmi">
+                                    <a href="<?= site_url('ticketing/createSurat/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Formulir Draf Surat Resmi" title="Buat draf surat resmi">
                                         <i class="la la-file-text text-info mr-1"></i> Draf Surat
                                     </a>
-                                    <a href="<?= site_url('ticketing/last_validated/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold" title="Terbitkan QR Code keabsahan berkas">
+                                    <a href="<?= site_url('ticketing/last_validated/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Terbitkan QR Dokumen Keabsahan" title="Terbitkan QR Code keabsahan berkas">
                                         <i class="la la-qrcode text-dark mr-1"></i> Terbitkan QR
                                     </a>
                                 <?php endif; ?>
@@ -520,6 +532,30 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
     </div>
 </div>
 
+<!-- Modal Aksi Dinamis (Disposisi, Draf Surat, QR) -->
+<div class="modal fade" id="modal-action-dialog" tabindex="-1" role="dialog" aria-labelledby="modalActionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 4px; overflow: hidden;">
+            <div class="modal-header bg-light py-3">
+                <h5 class="modal-title font-weight-bold" id="modalActionLabel" style="font-size: 1.1rem; color: #48465b;">
+                    <i class="flaticon2-gear text-primary mr-1"></i> <span id="action-modal-title">Aksi Tiket</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4" id="modal-action-content">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Memuat...</span>
+                    </div>
+                    <div class="mt-2 text-muted" style="font-size: 13px;">Sedang memuat formulir aksi...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Penanganan klik pratinjau dokumen modal
@@ -542,6 +578,129 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#customFile').on('change', function () {
         var fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').addClass('selected').html(fileName || 'Pilih berkas lampiran pendukung...');
+    });
+
+    // Penanganan AJAX untuk tombol Verifikasi Berkas (mencegah 400 Bad Request)
+    $('.btn-ajax-terima').on('click', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+
+        var triggerAjax = function () {
+            if (typeof KTApp !== 'undefined' && KTApp.blockPage) {
+                KTApp.blockPage({
+                    overlayColor: '#000000',
+                    type: 'v2',
+                    state: 'primary',
+                    message: 'Sedang memproses verifikasi berkas...'
+                });
+            }
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function (data) {
+                    if (typeof KTApp !== 'undefined' && KTApp.unblockPage) {
+                        KTApp.unblockPage();
+                    }
+                    if (typeof swal !== 'undefined' && swal.fire) {
+                        swal.fire({
+                            title: 'Berhasil Diverifikasi!',
+                            text: 'Berkas permohonan tiket berhasil diverifikasi.',
+                            type: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(function () {
+                            location.reload();
+                        });
+                    } else {
+                        alert('Berkas permohonan tiket berhasil diverifikasi.');
+                        location.reload();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    if (typeof KTApp !== 'undefined' && KTApp.unblockPage) {
+                        KTApp.unblockPage();
+                    }
+                    var msg = xhr.responseText || 'Gagal memverifikasi berkas tiket. Silakan coba kembali.';
+                    if (typeof swal !== 'undefined' && swal.fire) {
+                        swal.fire({
+                            title: 'Gagal Verifikasi',
+                            text: msg,
+                            type: 'error'
+                        });
+                    } else {
+                        alert('Gagal verifikasi: ' + msg);
+                    }
+                }
+            });
+        };
+
+        if (typeof swal !== 'undefined' && swal.fire) {
+            swal.fire({
+                title: 'Verifikasi Berkas Permohonan?',
+                text: 'Apakah Anda yakin seluruh berkas persyaratan tiket ini telah diperiksa dan dinyatakan sah?',
+                type: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#5d78ff',
+                cancelButtonColor: '#fd397a',
+                confirmButtonText: 'Ya, Verifikasi!',
+                cancelButtonText: 'Batal'
+            }).then(function (result) {
+                if (result.value) {
+                    triggerAjax();
+                }
+            });
+        } else {
+            if (confirm('Apakah Anda yakin seluruh berkas persyaratan tiket ini telah diperiksa dan sah?')) {
+                triggerAjax();
+            }
+        }
+    });
+
+    // Penanganan AJAX untuk memuat modal formulir aksi (Disposisi, Draf Surat, QR)
+    $('.btn-ajax-modal').on('click', function (e) {
+        e.preventDefault();
+        var url = $(this).attr('href');
+        var title = $(this).attr('data-modal-title') || 'Aksi Tiket';
+
+        $('#action-modal-title').text(title);
+        $('#modal-action-content').html(
+            '<div class="text-center py-5">' +
+            '    <div class="spinner-border text-primary" role="status"><span class="sr-only">Memuat...</span></div>' +
+            '    <div class="mt-2 text-muted" style="font-size: 13px;">Sedang memuat formulir aksi...</div>' +
+            '</div>'
+        );
+        $('#modal-action-dialog').modal('show');
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function (data) {
+                var content = (data && typeof data === 'object' && typeof data.response === 'string') 
+                    ? data.response 
+                    : data;
+                $('#modal-action-content').html(content);
+                // Inisialisasi komponen bawaan jika form memuat select2 atau datepicker
+                if (typeof KTApp !== 'undefined' && KTApp.initTooltips) {
+                    KTApp.initTooltips();
+                }
+                if ($.fn.select2) {
+                    $('#modal-action-content .m-select2').select2({ width: '100%' });
+                }
+            },
+            error: function (xhr, status, error) {
+                $('#modal-action-content').html(
+                    '<div class="alert alert-danger text-center mb-0" style="font-size: 13px;">' +
+                    '    <i class="flaticon-danger mr-1"></i> Gagal memuat formulir aksi (' + (xhr.statusText || error) + '). Silakan coba lagi.' +
+                    '</div>'
+                );
+            }
+        });
     });
 });
 </script>

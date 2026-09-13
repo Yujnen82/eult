@@ -211,6 +211,44 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Tanggapan & Aksi Tiket', $html);
         $this->assertStringContainsString('dokumen.pdf', $html);
     }
+
+    public function testTicketDetailWorkstationResolvesEncKeyAndAjaxHandlers(): void
+    {
+        $renderer = service('renderer');
+        $renderer->resetData();
+        $html = $renderer->setData([
+            'page_judul' => 'Rincian Permohonan Tiket',
+            // Tanpa 'key' atau 'kunci', menyimulasikan pemanggilan asli dari Ticketing::detail($kunci)
+            'datas' => [
+                'ticketTrackingId' => 'TK-2026-555',
+                'ticketName' => 'Bambang Sudarsono',
+                'ticketEmail' => 'bambang@unmul.ac.id',
+                'ticketNoHp' => '081122334455',
+                'ticketAddress' => 'Samarinda Ulu',
+                'ticketCreated' => '2026-09-13 12:00:00',
+                'ticketSubject' => 'Permohonan Validasi',
+                'ticketStatus' => 1,
+                'statusNama' => 'Baru',
+                'statusColor' => 'primary',
+                'categoryNama' => 'Layanan Umum',
+                'sCatNama' => 'Validasi Berkas',
+                'unitNama' => 'Biro Umum',
+            ],
+            'close_url' => 'http://example.com/ticketing/close/KEY-FROM-CLOSE-URL',
+            'cetakterima' => 'http://example.com/ticketing/cetakterima/KEY-FROM-CLOSE-URL',
+            'user_group' => ['susrSgroupNama' => 'ADMIN', 'susrProfil' => 'Administrator'],
+        ])->render('pages/ticketing/detail');
+
+        // Verifikasi $encKey otomatis teresolusi dari $close_url
+        $this->assertStringContainsString('KEY-FROM-CLOSE-URL', $html);
+        $this->assertStringContainsString('ticketing/terima/KEY-FROM-CLOSE-URL', $html);
+        $this->assertStringContainsString('ticketing/assign/KEY-FROM-CLOSE-URL', $html);
+
+        // Verifikasi keberadaan kelas AJAX dan modal aksi dinamis
+        $this->assertStringContainsString('btn-ajax-terima', $html);
+        $this->assertStringContainsString('btn-ajax-modal', $html);
+        $this->assertStringContainsString('modal-action-dialog', $html);
+    }
 }
 
 

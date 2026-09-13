@@ -1850,7 +1850,7 @@
     <!--end::Global Theme Bundle -->
 
     <!--begin::Page Scripts(used by this page) -->
-    <script src="<?= base_url(); ?>assets/js/pages/custom/pages/user/login.js?v=20260913e" type="text/javascript"></script>
+    <script src="<?= base_url(); ?>assets/js/pages/custom/pages/user/login.js?v=20260913h" type="text/javascript"></script>
     <!--end::Page Scripts -->
 
     <!--begin::Delight Navigation Controller & Feedback Scripts -->

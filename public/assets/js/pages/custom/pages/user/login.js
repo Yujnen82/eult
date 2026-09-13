@@ -89,28 +89,57 @@ var KTLoginGeneral = function () {
         displayCreateForm();
     });
 
-    $('#ticketCategories').on('change', e => {
-        e.preventDefault();
-        const id = e.currentTarget.value;
-        loadSyarat(id);
-    });
+    var initKategoriSelect2 = function ($categories) {
+        $categories.select2({
+            width: '100%',
+            language: {
+                noResults: function () {
+                    return "Tidak ada data yang sesuai";
+                },
+                searching: function () {
+                    return "Mencari...";
+                }
+            }
+        });
+    }
+
+    // Select2 mengunci tampilan placeholder/opsi dari elemen saat pertama
+    // di-init, jadi cukup mengubah atribut atau isi <select> tidak akan
+    // memperbarui yang tampil. Solusi yang terbukti: ganti elemen <select>
+    // dengan elemen baru, lalu init ulang Select2 di atasnya.
+    var renderKategori = function (html, placeholder, disabled, nilaiTerpilih) {
+        var lama = document.getElementById('ticketCategories');
+        if (lama) {
+            var $lama = $('#ticketCategories');
+            if ($lama.hasClass('select2-hidden-accessible')) {
+                $lama.select2('destroy');
+            }
+            var baru = document.createElement('select');
+            baru.id = 'ticketCategories';
+            baru.name = 'ticketCategories';
+            baru.className = 'form-control m-select2';
+            baru.setAttribute('data-placeholder', placeholder);
+            baru.disabled = disabled;
+            // Atribut required dipasang langsung agar validasi form tetap
+            // mengenali elemen baru tanpa bergantung pada rule bawaan.
+            baru.required = true;
+            baru.innerHTML = html;
+            lama.replaceWith(baru);
+        }
+        var $categories = $('#ticketCategories');
+        initKategoriSelect2($categories);
+        $categories.on('change', e => {
+            e.preventDefault();
+            loadSyarat(e.currentTarget.value);
+        });
+        if (nilaiTerpilih) {
+            $categories.val(nilaiTerpilih).trigger('change');
+        }
+    }
 
     var loadLayanan = function (istrue, layananId) {
-        var $categories = $('#ticketCategories');
         if (istrue) {
-            $categories.prop('disabled', false).attr('data-placeholder', 'Pilih Kategori Layanan Kampus');
-            $categories.html('<option value="">Memuat kategori layanan...</option>');
-            $categories.select2({
-                width: '100%',
-                language: {
-                    noResults: function () {
-                        return "Tidak ada data yang sesuai";
-                    },
-                    searching: function () {
-                        return "Mencari...";
-                    }
-                }
-            });
+            renderKategori('<option value="">Memuat kategori layanan...</option>', 'Pilih Kategori Layanan Kampus', false);
             $.ajax({
                 type: 'POST',
                 url: '/login/getLayanan',
@@ -119,26 +148,14 @@ var KTLoginGeneral = function () {
                     layananId: layananId
                 },
                 success: data => {
-                    $categories.html(data).trigger('change');
+                    renderKategori(data, 'Pilih Kategori Layanan Kampus', false, layananId);
                 },
                 error: () => {
-                    $categories.html('<option value="">Gagal memuat layanan. Silakan coba lagi.</option>').trigger('change');
+                    renderKategori('<option value="">Gagal memuat layanan. Silakan coba lagi.</option>', 'Pilih Kategori Layanan Kampus', false);
                 }
             });
         } else {
-            $categories.prop('disabled', true).attr('data-placeholder', 'Masukkan nomor identitas terlebih dahulu...');
-            $categories.html('<option value="">Masukkan nomor identitas terlebih dahulu...</option>');
-            $categories.select2({
-                width: '100%',
-                language: {
-                    noResults: function () {
-                        return "Tidak ada data yang sesuai";
-                    },
-                    searching: function () {
-                        return "Mencari...";
-                    }
-                }
-            }).trigger('change');
+            renderKategori('<option value="">Masukkan nomor identitas terlebih dahulu...</option>', 'Masukkan nomor identitas terlebih dahulu...', true);
             $('#syarat').html('');
         }
     }

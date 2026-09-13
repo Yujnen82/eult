@@ -137,7 +137,15 @@ var KTLoginGeneral = function () {
         }
     }
 
+    // Penanda urutan request. Respons lambat dari isian lama tidak boleh
+    // menimpa hasil isian terbaru, karena bisa mematikan kembali kategori
+    // yang baru saja terbuka.
+    var urutanIdentitas = 0;
+    var urutanLayanan = 0;
+
     var loadLayanan = function (istrue, layananId) {
+        urutanLayanan++;
+        var urutanIni = urutanLayanan;
         if (istrue) {
             renderKategori('<option value="">Memuat kategori layanan...</option>', 'Pilih Kategori Layanan Kampus', false);
             $.ajax({
@@ -148,9 +156,15 @@ var KTLoginGeneral = function () {
                     layananId: layananId
                 },
                 success: data => {
+                    if (urutanIni !== urutanLayanan) {
+                        return;
+                    }
                     renderKategori(data, 'Pilih Kategori Layanan Kampus', false, layananId);
                 },
                 error: () => {
+                    if (urutanIni !== urutanLayanan) {
+                        return;
+                    }
                     renderKategori('<option value="">Gagal memuat layanan. Silakan coba lagi.</option>', 'Pilih Kategori Layanan Kampus', false);
                 }
             });
@@ -179,6 +193,8 @@ var KTLoginGeneral = function () {
         $("[name='ticketName']").val('');
         $("[name='ticketName']").attr('readonly', false);
         if (val_id.length == 10 || val_id.length == 16 || val_id.length == 18 || val_id.length == 14) {
+            urutanIdentitas++;
+            var urutanIni = urutanIdentitas;
             $('#identitas-feedback').html('<span class="text-primary"><i class="flaticon2-refresh kt-spinner kt-spinner--sm kt-spinner--primary"></i> Memeriksa data...</span>');
             $.ajax({
                 type: 'POST',
@@ -188,6 +204,10 @@ var KTLoginGeneral = function () {
                 },
                 dataType: 'json',
                 success: res => {
+                    // Abaikan respons dari isian lama yang datang terlambat.
+                    if (urutanIni !== urutanIdentitas) {
+                        return;
+                    }
                     if (res.status == true) {
                         if (res.umum == true) {
                             $("[name='ticketName']").attr('readonly', false);
@@ -209,6 +229,9 @@ var KTLoginGeneral = function () {
                     }
                 },
                 error: () => {
+                    if (urutanIni !== urutanIdentitas) {
+                        return;
+                    }
                     $('#identitas-feedback').html('<span class="text-danger small">Gagal memeriksa data</span>');
                     loadLayanan(false);
                 }
@@ -223,8 +246,14 @@ var KTLoginGeneral = function () {
         }
     }
 
+    // Debounce supaya pengecekan hanya sekali setelah pengetikan berhenti,
+    // bukan sekali per ketukan tombol.
+    var jedaIdentitas = null;
     $('#ticketIdentitas').on('input keyup', function (e) {
-        checkIdentitas();
+        clearTimeout(jedaIdentitas);
+        jedaIdentitas = setTimeout(function () {
+            checkIdentitas();
+        }, 250);
     });
 
     var handleSignInFormSubmit = function () {

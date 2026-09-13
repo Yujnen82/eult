@@ -1,3 +1,13 @@
+// CI4 mengirim fragmen halaman sebagai JSON {response: "..."} dan jQuery
+// otomatis mengubahnya menjadi objek, sehingga .html(eultTerimaHtml(data)) akan mencetak
+// "[object Object]". Helper ini mengambil isi HTML-nya dengan aman.
+const eultTerimaHtml = function (data) {
+    if (data && typeof data === 'object' && typeof data.response === 'string') {
+        return data.response;
+    }
+    return data;
+}
+
 var refKategori = function() {
 	const main_form = $('#ref_kategori');
 	const handleWidgets = () => {
@@ -79,7 +89,7 @@ var refKategori = function() {
 					url: e.currentTarget.href,
 					success: function(data) {
 						$('#create').removeClass('response-hide');
-						$('#create').html(data);
+						$('#create').html(eultTerimaHtml(data));
 						KTUtil.animateClass(main_form.find('#create')[0], 'flipInX animated');
 						$('#create').addClass('response-show');
 						handleSave();
@@ -94,7 +104,7 @@ var refKategori = function() {
 					url: e.currentTarget.href,
 					success: function(data) {
 						$('#create').removeClass('response-hide');
-						$('#create').html(data);
+						$('#create').html(eultTerimaHtml(data));
 						KTUtil.animateClass(main_form.find('#create')[0], 'flipInX animated');
 						$('#create').addClass('response-show');
 						handleSave();
@@ -112,7 +122,7 @@ var refKategori = function() {
 					data: $(formShow).serialize(),
 					success: function(data) {
 						$('#create').removeClass('response-hide');
-						$('#create').html(data);
+						$('#create').html(eultTerimaHtml(data));
 						KTUtil.animateClass(main_form.find('#create')[0], 'flipInX animated');
 						$('#create').addClass('response-show');
 						handleAddSub();
@@ -130,7 +140,7 @@ var refKategori = function() {
 				data: $(formShow).serialize(),
 				success: function(data) {
 					$('#create').removeClass('response-hide');
-					$('#create').html(data);
+					$('#create').html(eultTerimaHtml(data));
 					KTUtil.animateClass(main_form.find('#create')[0], 'flipInX animated');
 					$('#create').addClass('response-show');
 					handleSave();
@@ -147,7 +157,7 @@ var refKategori = function() {
 					data: $(formShow).serialize(),
 					success: function(data) {
 						$('#create').removeClass('response-hide');
-						$('#create').html(data);
+						$('#create').html(eultTerimaHtml(data));
 						KTUtil.animateClass(main_form.find('#create')[0], 'flipInX animated');
 						$('#create').addClass('response-show');
 						handleSave();

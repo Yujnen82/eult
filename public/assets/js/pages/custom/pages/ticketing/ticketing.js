@@ -1,3 +1,13 @@
+// CI4 mengirim fragmen halaman sebagai JSON {response: "..."} dan jQuery
+// otomatis mengubahnya menjadi objek, sehingga .html(eultTerimaHtml(data)) akan mencetak
+// "[object Object]". Helper ini mengambil isi HTML-nya dengan aman.
+const eultTerimaHtml = function (data) {
+    if (data && typeof data === 'object' && typeof data.response === 'string') {
+        return data.response;
+    }
+    return data;
+}
+
 const KTTicketing = function () {
     const main_form = $('#main_form');
     const initHandleWidgets = () => {
@@ -41,18 +51,55 @@ const KTTicketing = function () {
     }
     const initHandleShow = () => {
         const handleEventCreate = (status) => {
-            const loadLayanan = function (istrue) {
-                $('#ticketCategories').html('');
-                $.ajax({
-                    type: 'POST',
-                    url: '/ticketing/getLayanan',
-                    data: {
-                        id: istrue
-                    },
-                    success: data => {
-                        $('#ticketCategories').html(data);
+            // Select2 mengunci tampilan placeholder/opsi saat pertama di-init,
+            // jadi isi <select> diganti lewat elemen baru agar tampilannya ikut
+            // berubah (pola sama dengan form publik di login.js).
+            const renderKategori = function (html, disabled) {
+                const lama = document.getElementById('ticketCategories');
+                if (lama) {
+                    const $lama = $('#ticketCategories');
+                    if ($lama.hasClass('select2-hidden-accessible')) {
+                        $lama.select2('destroy');
+                    }
+                    const baru = document.createElement('select');
+                    baru.id = 'ticketCategories';
+                    baru.name = 'ticketCategories';
+                    baru.className = 'form-control m-select2';
+                    baru.setAttribute('data-placeholder', 'Pilih Kategori Layanan Kampus');
+                    baru.disabled = disabled;
+                    baru.required = true;
+                    baru.innerHTML = html;
+                    lama.replaceWith(baru);
+                }
+                const $categories = $('#ticketCategories');
+                $categories.select2({
+                    width: '100%',
+                    language: {
+                        noResults: function () {
+                            return "Tidak ada data yang sesuai";
+                        },
+                        searching: function () {
+                            return "Mencari...";
+                        }
                     }
                 });
+            }
+            const loadLayanan = function (istrue) {
+                if (istrue) {
+                    renderKategori('<option value="">Memuat kategori layanan...</option>', false);
+                    $.ajax({
+                        type: 'POST',
+                        url: '/ticketing/getLayanan',
+                        data: {
+                            id: istrue
+                        },
+                        success: data => {
+                            renderKategori(data, false);
+                        }
+                    });
+                } else {
+                    renderKategori('<option value="">Masukkan nomor identitas terlebih dahulu...</option>', true);
+                }
             }
             const formSimpan = $('#form_ticketing');
             const btnSimpan = $('#btn_save');
@@ -407,7 +454,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         handleEventReject();
@@ -612,7 +659,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();
@@ -627,7 +674,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();
@@ -642,7 +689,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();
@@ -657,7 +704,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();
@@ -673,7 +720,7 @@ const KTTicketing = function () {
                     success: data => {
                         $('#first-form').removeClass('response-show');
                         $('#first-form').addClass('response-hide');
-                        $('#second-form').html(data);
+                        $('#second-form').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#second-form')[0], 'flipInX animated');
                         $('#second-form').addClass('response-show');
                         initHandleWidgets();
@@ -689,7 +736,7 @@ const KTTicketing = function () {
                     url: $this.href,
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();
@@ -889,7 +936,7 @@ const KTTicketing = function () {
                     KTUtil.scrollTop();
                     $('#first-form').removeClass('response-show');
                     $('#first-form').addClass('response-hide');
-                    $('#second-form').html(data);
+                    $('#second-form').html(eultTerimaHtml(data));
                     KTUtil.animateClass(main_form.find('#second-form')[0], 'flipInY animated');
                     $('#second-form').addClass('response-show');
                     initHandleWidgets();
@@ -918,7 +965,7 @@ const KTTicketing = function () {
                     data: formShow.serialize(),
                     success: data => {
                         $('#response').removeClass('response-hide');
-                        $('#response').html(data);
+                        $('#response').html(eultTerimaHtml(data));
                         KTUtil.animateClass(main_form.find('#response')[0], 'flipInX animated');
                         $('#response').addClass('response-show');
                         initHandleWidgets();

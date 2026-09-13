@@ -3,12 +3,14 @@
 <div class="kt-subheader  kt-grid__item" id="kt_subheader">
 	<div class="kt-container  kt-container--fluid ">
 		<div class="kt-subheader__main">
-			<h3 class="kt-subheader__title"><?= $page_judul ?></h3>
-			<span class="kt-subheader__separator kt-subheader__separator--v"></span>
-			<span class="kt-subheader__desc"><?= $breadcrumb->susrmdgroupDisplay ?></span>
+			<h3 class="kt-subheader__title"><?= $page_judul ?? '' ?></h3>
+			<?php if (isset($breadcrumb->susrmdgroupDisplay)) : ?>
+				<span class="kt-subheader__separator kt-subheader__separator--v"></span>
+				<span class="kt-subheader__desc"><?= $breadcrumb->susrmdgroupDisplay ?></span>
+			<?php endif; ?>
 
 			<?php
-			if ($breadcrumb->susrmdgroupDisplay != $breadcrumb->susrmodulNamaDisplay) :
+			if (isset($breadcrumb->susrmdgroupDisplay, $breadcrumb->susrmodulNamaDisplay) && $breadcrumb->susrmdgroupDisplay != $breadcrumb->susrmodulNamaDisplay) :
 				?>
 				<span class="kt-subheader__separator kt-subheader__separator--v"></span>
 				<span class="kt-subheader__desc"><?= $breadcrumb->susrmodulNamaDisplay ?></span>
@@ -49,15 +51,15 @@
         			<div class="tab-pane active show" id="topbar_notifications_notifications" role="tabpanel">
         				<div class="kt-notification kt-margin-t-10 kt-margin-b-10 kt-scroll" data-scroll="true" data-height="300" data-mobile-height="200">
         					<?php
-        					if ($notiftiket != false) {
-        						$i = 1;
-        						foreach ($notiftiket as $row) {
-        							$key = service('enkripsi')->encode($row['repliesTicketId']);
-        							?>
-									<?php
-										if ($row['jumlah'] != 0) {
-										?>
-        							<a href="<?= $detail_url . $key ?>" class="kt-notification__item">
+					if (!empty($notiftiket)) {
+						$i = 1;
+						foreach ($notiftiket as $row) {
+							$key = service('enkripsi')->encode($row['repliesTicketId']);
+							?>
+							<?php
+								if ($row['jumlah'] != 0) {
+								?>
+							<a href="<?= ($detail_url ?? site_url('ticketing/detail/')) . $key ?>" class="kt-notification__item">
         								<div class="kt-notification__item-icon">
         									<i class="flaticon2-bell-1 kt-font-success"></i>
         								</div>

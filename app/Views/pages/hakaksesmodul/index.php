@@ -26,7 +26,7 @@
                             <label class="font-weight-bold text-dark mb-2">
                                 Pilih Grup Pengguna <span class="text-danger">*</span>
                             </label>
-                            <div class="row align-items-center">
+                            <div class="row align-items-start">
                                 <div class="col-md-8 col-lg-9">
                                     <select class="form-control m-select2" name="hakakses" id="select_role" required>
                                         <option value="">-- Pilih Grup Pengguna / Role --</option>
@@ -38,9 +38,6 @@
                                             <?php endforeach; ?>
                                         <?php endif; ?>
                                     </select>
-                                    <span class="form-text text-muted mt-2">
-                                        <i class="flaticon2-information mr-1"></i> Pilih grup pengguna untuk mengelola izin akses dan otorisasi menu modul sistem.
-                                    </span>
                                 </div>
                                 <div class="col-md-4 col-lg-3 mt-3 mt-md-0 text-md-right">
                                     <button type="submit" id="btn_save" class="btn btn-brand btn-elevate btn-icon-sm w-100 w-md-auto">
@@ -49,6 +46,9 @@
                                     </button>
                                 </div>
                             </div>
+                            <span class="form-text text-muted mt-2">
+                                <i class="flaticon2-information mr-1"></i> Pilih grup pengguna untuk mengelola izin akses dan otorisasi menu modul sistem.
+                            </span>
                         </div>
                     </div>
                 </form>

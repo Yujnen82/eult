@@ -71,7 +71,7 @@ License: You must have a valid license purchased only from themeforest(the above
 		<div class="kt-header-mobile__logo">
 			<a href="index.html">
 				<div style="position:absolute;top:30%;left:14px;font-size:16px;font-weight:bold;color:aliceblue">
-					<?= $_SERVER['SERVER_NAME']; ?>
+					<?= $_SERVER['SERVER_NAME'] ?? 'EULT'; ?>
 				</div>
 				<!-- <img alt="Logo" src="assets/media/logos/logo-light.png" /> -->
 			</a>

@@ -48,4 +48,22 @@ final class AlurFondasiTest extends CIUnitTestCase
         $hasil->assertOK();
         $hasil->assertJSONFragment(['captcha' => session()->get('captcha')]);
     }
+
+    public function testHomeDashboardTerbukaDenganSesiLogin(): void
+    {
+        $hasil = $this->withSession([
+            'logged_in' => [
+                'susrNama'           => 'admin_test',
+                'susrSgroupNama'     => 'ADMIN',
+                'susrSgroupNama_ori' => 'ADMIN',
+                'susrProfil'         => 'Administrator Test',
+            ],
+        ])->get('/home');
+
+        $hasil->assertOK();
+        $hasil->assertSee('Tiket Baru Masuk');
+        $hasil->assertSee('Perlu Tindakan');
+        $hasil->assertSee('Tiket Dalam Proses');
+        $hasil->assertSee('Tiket Selesai');
+    }
 }

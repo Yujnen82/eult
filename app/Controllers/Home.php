@@ -29,6 +29,61 @@ class Home extends BaseController
         $data            = $this->getMaster($this->pathPage . $this->pageIndex);
         $data['scripts'] = [];
 
+        // Ambil data agregat tiket untuk KPI dashboard
+        $db = \Config\Database::connect();
+
+        $totalMasuk    = 0;
+        $totalProses   = 0;
+        $totalSelesai  = 0;
+        $totalTindakan = 0;
+        $urgentTickets = [];
+
+        try {
+            // Deteksi skema tabel database (kompatibilitas nama tabel konseptual dan riil)
+            $ticketTable = $db->tableExists('ticket') ? 'ticket' : ($db->tableExists('d_ticketing') ? 'd_ticketing' : null);
+            $unitTable   = $db->tableExists('unit') ? 'unit' : ($db->tableExists('s_unit') ? 's_unit' : null);
+            $statusTable = $db->tableExists('ticket_status') ? 'ticket_status' : ($db->tableExists('r_status') ? 'r_status' : null);
+
+            if ($ticketTable !== null) {
+                $totalMasuk    = $db->table($ticketTable)->where('ticketStatus', 1)->countAllResults();
+                $totalProses   = $db->table($ticketTable)->whereIn('ticketStatus', [2, 3, 4])->countAllResults();
+                $totalSelesai  = $db->table($ticketTable)->where('ticketStatus', 5)->countAllResults();
+                $totalTindakan = $db->table($ticketTable)->whereIn('ticketStatus', [1, 2])->countAllResults();
+
+                $builder = $db->table($ticketTable)
+                    ->select("{$ticketTable}.ticketTrackingId, {$ticketTable}.ticketName, {$ticketTable}.ticketCreated, {$ticketTable}.ticketStatus");
+
+                if ($unitTable !== null) {
+                    $builder->select("{$unitTable}.unitNama")
+                        ->join($unitTable, "{$unitTable}.unitId = {$ticketTable}.ticketAssign", 'left');
+                }
+
+                if ($statusTable !== null) {
+                    $builder->select("{$statusTable}.statusNama, {$statusTable}.statusColor")
+                        ->join($statusTable, "{$statusTable}.statusId = {$ticketTable}.ticketStatus", 'left');
+                }
+
+                $urgentTickets = $builder
+                    ->whereIn("{$ticketTable}.ticketStatus", [1, 2])
+                    ->orderBy("{$ticketTable}.ticketCreated", 'DESC')
+                    ->limit(5)
+                    ->get()
+                    ->getResultArray();
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Gagal memuat agregat KPI dashboard: ' . $e->getMessage());
+        }
+
+        $data['total_masuk']    = $totalMasuk;
+        $data['total_proses']   = $totalProses;
+        $data['total_selesai']  = $totalSelesai;
+        $data['total_tindakan'] = $totalTindakan;
+        $data['tiket_urgent']   = $urgentTickets;
+        $data['tren_mingguan']  = [
+            'labels' => ['Sen', 'Sel', 'Rab', 'Kam', 'Jum'],
+            'data'   => [0, 0, 0, 0, 0],
+        ];
+
         return view($this->template, $data);
     }
 

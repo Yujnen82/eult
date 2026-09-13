@@ -33,6 +33,12 @@ var EultDataTables = (function () {
                 return;
             }
 
+            // 2b. Lewati tabel yang memiliki input checkbox (seperti matriks hak akses/RBAC atau pemilih massal)
+            // agar seluruh opsi tetap terlihat utuh dan tidak terpotong oleh paginasi (UX lebih baik)
+            if ($table.find('input[type="checkbox"]').length > 0 || $table.find('.kt-checkbox').length > 0) {
+                return;
+            }
+
             // 3. Lewati tabel jika hanya ada satu baris empty state dengan colspan (menghindari DataTables alert)
             var $tbodyRows = $table.find('tbody tr');
             if ($tbodyRows.length === 1 && $tbodyRows.find('td[colspan]').length > 0) {

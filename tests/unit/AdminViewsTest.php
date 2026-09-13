@@ -584,6 +584,27 @@ class AdminViewsTest extends CIUnitTestCase
         ])->render('pages/home/dashboard_urgent');
 
         $this->assertStringContainsString('no-datatable', $htmlUrgent);
+
+        // 3. Periksa tabel matriks ber-checkbox (hakakseslayanan/modul/unit/pengguna) memiliki guard no-datatable
+        $renderer->resetData();
+        $htmlLayanan = $renderer->setData([
+            'save_url' => '#',
+            'datas' => [],
+            'dt_modul' => [],
+        ])->render('pages/hakakseslayanan/response');
+        $this->assertStringContainsString('no-datatable', $htmlLayanan);
+
+        $renderer->resetData();
+        $htmlUnit = $renderer->setData([
+            'save_url' => '#',
+            'datas' => [],
+            'dt_modul' => [],
+        ])->render('pages/hakaksesunit/response');
+        $this->assertStringContainsString('no-datatable', $htmlUnit);
+
+        // 4. Periksa script eult-datatable.js secara eksplisit mengecualikan input[type="checkbox"]
+        $jsContent = file_get_contents(FCPATH . 'assets/js/pages/eult-datatable.js');
+        $this->assertStringContainsString('input[type="checkbox"]', $jsContent);
     }
 }
 

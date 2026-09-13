@@ -27,7 +27,7 @@
                     <div class="kt-section">
                         <div class="kt-section__content">
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table class="table table-hover no-datatable">
                                     <thead class="thead-light">
                                         <tr>
                                             <th>#</th>

@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-13T18:19:25+08:00",
+  "title": "Design System: E-ULT v2 Metronic",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Royal Civic Cobalt",
+        "canonical": "#5d78ff",
+        "tonalRamp": ["#1c2d7a", "#2940a6", "#3d57d4", "#5d78ff", "#7e94ff", "#a5b4ff", "#ced7ff", "#f0f3ff"]
+      },
+      "brand-dark": {
+        "role": "neutral",
+        "displayName": "Midnight Governance Navy",
+        "canonical": "#1a1a27",
+        "tonalRamp": ["#0b0b11", "#12121c", "#1a1a27", "#242436", "#35354e", "#515174", "#77779f", "#b4b4cf"]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Mint Civic Success",
+        "canonical": "#0abb87",
+        "tonalRamp": ["#044d37", "#066f50", "#08976d", "#0abb87", "#2fd1a2", "#63e0bc", "#a2eed9", "#e6f9f3"]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Institutional Amber",
+        "canonical": "#ffb822",
+        "tonalRamp": ["#734c00", "#a66f00", "#d99200", "#ffb822", "#ffc855", "#ffd888", "#ffe9bb", "#fff8ea"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Ruby Civic Alert",
+        "canonical": "#fd397a",
+        "tonalRamp": ["#7b0329", "#b30b42", "#e3195b", "#fd397a", "#fe699b", "#fe9bbe", "#fed0df", "#fef0f5"]
+      },
+      "bg-body": {
+        "role": "neutral",
+        "displayName": "Canvas Muted Soft",
+        "canonical": "#f2f3f8",
+        "tonalRamp": ["#7f818b", "#a7a9b3", "#c8cad1", "#dedfe5", "#ebecee", "#f2f3f8", "#f7f8fb", "#ffffff"]
+      },
+      "text-body": {
+        "role": "neutral",
+        "displayName": "Cadet Steel Text",
+        "canonical": "#646c9a",
+        "tonalRamp": ["#20243d", "#33395e", "#495180", "#646c9a", "#838bb5", "#a6adcf", "#cbcfdf", "#ededf3"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines dan judul besar landing publik." },
+      "headline": { "displayName": "Headline", "purpose": "Judul modul pada bilah subheader." },
+      "title": { "displayName": "Title", "purpose": "Judul kartu portlet dan modal dialog." },
+      "body": { "displayName": "Body", "purpose": "Teks paragraf, data tabel, dan label formulir." },
+      "label": { "displayName": "Label", "purpose": "Label formulir dan lencana status." }
+    },
+    "shadows": [
+      {
+        "name": "ambient-card",
+        "value": "0px 0px 13px 0px rgba(82, 63, 105, 0.05)",
+        "purpose": "Bayangan standar untuk portlet dan kartu konten putih."
+      },
+      {
+        "name": "elevated-aside",
+        "value": "0px 0px 28px 0px rgba(82, 63, 105, 0.08)",
+        "purpose": "Batas elevasi menu aside sidebar samping."
+      },
+      {
+        "name": "floating-dialog",
+        "value": "0px 0px 50px 0px rgba(82, 63, 105, 0.15)",
+        "purpose": "Bayangan untuk modal formulir dan dropdown menu."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Transisi default untuk hover tombol, tautan, dan toggler menu."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "576px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Tombol aksi utama untuk pengajuan tiket, simpan data, atau validasi berkas.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Simpan & Lanjutkan</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; padding: 0.65rem 1.25rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s; outline: none; text-decoration: none; } .ds-btn-primary { background-color: #5d78ff; border-color: #5d78ff; color: #ffffff; } .ds-btn-primary:hover { background-color: #3758ff; border-color: #2a4eff; } .ds-btn-primary:focus-visible { box-shadow: 0 0 0 0.2rem rgba(117, 140, 255, 0.5); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Tombol sekunder untuk aksi batal, kembali, atau opsi penunjang.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Batal</button>",
+      "css": ".ds-btn-secondary { background-color: #f4f5f8; border-color: #e2e5ec; color: #595d6e; } .ds-btn-secondary:hover { background-color: #e8eaef; border-color: #d8dce6; color: #48465b; } .ds-btn-secondary:focus-visible { box-shadow: 0 0 0 0.2rem rgba(226, 229, 236, 0.5); }"
+    },
+    {
+      "name": "Card Portlet",
+      "kind": "card",
+      "refersTo": "card-portlet",
+      "description": "Wadah utama untuk modul data, tabel permohonan, atau blok formulir.",
+      "html": "<div class=\"ds-portlet\"><div class=\"ds-portlet-head\"><h3 class=\"ds-portlet-title\">Data Permohonan Layanan</h3></div><div class=\"ds-portlet-body\"><p class=\"ds-portlet-text\">Silakan lengkapi berkas persyaratan sebelum tiket diproses oleh verifikator.</p></div></div>",
+      "css": ".ds-portlet { background-color: #ffffff; border-radius: 4px; box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.05); margin-bottom: 20px; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; } .ds-portlet-head { display: flex; align-items: center; justify-content: space-between; padding: 0 25px; min-height: 60px; border-bottom: 1px solid #ebedf2; } .ds-portlet-title { font-size: 1.2rem; font-weight: 500; color: #48465b; margin: 0; } .ds-portlet-body { padding: 25px; } .ds-portlet-text { font-size: 13px; font-weight: 300; color: #646c9a; margin: 0; line-height: 1.5; }"
+    },
+    {
+      "name": "Input Text Field",
+      "kind": "input",
+      "refersTo": "input-base",
+      "description": "Kolom input teks standar untuk formulir administrasi dan pencarian tiket.",
+      "html": "<input type=\"text\" class=\"ds-input\" placeholder=\"Masukkan nomor tiket / identitas...\" />",
+      "css": ".ds-input { display: block; width: 100%; height: calc(1.5em + 1.3rem + 2px); padding: 0.65rem 1rem; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 400; line-height: 1.5; color: #495057; background-color: #ffffff; border: 1px solid #e2e5ec; border-radius: 4px; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; outline: none; box-sizing: border-box; } .ds-input:focus { border-color: #9aabff; box-shadow: 0 0 0 0.2rem rgba(88, 103, 221, 0.25); } .ds-input::placeholder { color: #74788d; opacity: 1; }"
+    },
+    {
+      "name": "Status Badge Success",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Lencana status verifikasi tuntas atau tiket selesai diproses.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Tervalidasi</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; justify-content: center; font-family: 'Poppins', sans-serif; font-size: 11px; font-weight: 500; padding: 0.35rem 0.65rem; border-radius: 2px; } .ds-badge-success { background-color: rgba(10, 187, 135, 0.1); color: #0abb87; }"
+    },
+    {
+      "name": "Status Badge Danger",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Lencana status berkas ditolak, tidak valid, atau dikarantina.",
+      "html": "<span class=\"ds-badge ds-badge-danger\">Ditolak</span>",
+      "css": ".ds-badge-danger { background-color: rgba(253, 57, 122, 0.1); color: #fd397a; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Civic Academic Registry",
+    "overview": "Sistem desain E-ULT v2 memadukan ketertiban birokrasi universitas dengan kejelasan interaksi digital modern. Setiap bidang visual dirancang untuk memancarkan kepastian, kewibawaan institusional, dan transparansi bagi seluruh sivitas akademika Universitas Mulawarman serta masyarakat umum. Fondasi visual dibangun di atas tema Metronic v6 (Bootstrap 4 & KT Framework) dengan tata kelola panel portlet yang rapi, garis sekat 1px yang presisi, dan skema kontras bertingkat antara kanvas abu-abu lembut (#f2f3f8) dan permukaan portlet putih bersih (#ffffff).",
+    "keyCharacteristics": [
+      "Struktur Portlet Bersekat Presisi: Konten dikelompokkan ke dalam portlet mandiri dengan header dan footer bergaris batas halus.",
+      "Keterbacaan Tipografi Ringan (Light & Crisp): Teks bodi Poppins bobot 300 pada 13px memberikan kerapatan data yang nyaman dibaca.",
+      "Semantik Status Fungsional: Warna aksen digunakan secara selektif untuk mengindikasikan status tiket, verifikasi berkas, dan aksi utama.",
+      "Elevasi Ambien Bersih: Mengandalkan kontras permukaan datar bertingkat dengan bayangan ambien sangat halus."
+    ],
+    "rules": [
+      {
+        "name": "The High-Contrast Civic Action Rule",
+        "body": "Warna Royal Civic Cobalt (#5d78ff) diprioritaskan hanya pada titik interaksi yang membutuhkan keputusan pengguna (tombol submit, unduh berkas, tautan tiket aktif). Warna ini tidak boleh digunakan sebagai latar blok konten berukuran besar.",
+        "section": "colors"
+      },
+      {
+        "name": "The Functional Status Rule",
+        "body": "Warna mint success (#0abb87), amber warning (#ffb822), dan ruby danger (#fd397a) adalah warna fungsional eksklusif untuk siklus hidup tiket dan integritas berkas. Jangan menggunakan warna status ini untuk keperluan dekoratif murni.",
+        "section": "colors"
+      },
+      {
+        "name": "The Weight For Hierarchy Rule",
+        "body": "Pemisahan hirarki teks dilakukan terutama melalui perbedaan bobot (font-weight 300 untuk bodi, 500 untuk judul dan label) daripada lonjakan ukuran font yang ekstrem, menjaga kerapian dokumen administratif.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-Surface Priority Rule",
+        "body": "Seluruh permukaan konten pada keadaan diam bersifat datar dengan garis batas halus. Bayangan hanya hadir sebagai penanda pemisahan bidang fungsional bertingkat.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do gunakan portlet card standar Metronic (.kt-portlet) untuk membungkus setiap modul data, formulir, atau tabel riwayat.",
+      "Do gunakan kelas badge unified (.kt-badge--unified-success, dll.) untuk label status tiket agar tabel data tetap bersih dan mudah dipindai.",
+      "Do pertahankan padding 25px di dalam bodi portlet untuk memastikan kenyamanan ruang pembacaan dokumen.",
+      "Do sertakan konfirmasi visual status aksi (alert toast atau pesan interaktif) setiap kali berkas diunggah, disimpan, atau didisposisikan.",
+      "Do terapkan validasi formulir yang jelas pada kolom input dengan garis tepi merah #fd397a dan pesan kesalahan di bawah kolom terkait."
+    ],
+    "donts": [
+      "Don't memasukkan library stylesheet tambahan di luar bundel Metronic yang dapat merusak kesinambungan styling komponen aktif.",
+      "Don't menggunakan sudut melengkung ekstrem (>8px) pada kartu portlet atau kotak input utama.",
+      "Don't mewarnai latar belakang tabel dengan warna-warna terang yang menyilaukan; gunakan baris belang netral (table-striped) jika diperlukan.",
+      "Don't menghapus garis sekat kepala portlet (.kt-portlet__head) pada halaman formulir administrasi berjenjang.",
+      "Don't menggunakan font dekoratif atau script playful yang bertentangan dengan kredibilitas institusi kampus."
+    ]
+  }
+}

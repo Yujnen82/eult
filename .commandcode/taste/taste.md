@@ -1,0 +1,4 @@
+- Prefers communication in Bahasa Indonesia. Confidence: 0.8
+- Prefers working directly in the main checkout without git worktree/branch isolation when the project is still a fresh app-starter/scaffold. Confidence: 0.7
+- Prefers previewing/trying web apps via a FlyEnv local deployment. Confidence: 0.7
+- Prefers exposing FlyEnv local sites via Cloudflare Tunnel public domain when presenting/demoing. Confidence: 0.7

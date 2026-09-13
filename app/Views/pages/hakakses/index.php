@@ -13,74 +13,74 @@
                 <div class="kt-portlet__head">
                     <div class="kt-portlet__head-label">
                         <h3 class="kt-portlet__head-title">
-                            <?= strtoupper($page_judul) ?>
+                            <?= strtoupper(esc($page_judul ?? 'Manajemen Hak Akses')) ?>
                         </h3>
                     </div>
                     <div class="kt-portlet__head-toolbar">
                         <div class="kt-portlet__head-actions">
-                            <a href="<?= $create_url ?>" class="btn btn-outline-primary">
-                                <span>
-                                    <i class="flaticon2-plus"></i>
-                                    <span>Create</span>
-                                </span>
+                            <a href="<?= $create_url ?? '#' ?>" class="btn btn-brand btn-elevate btn-icon-sm" id="btn-create">
+                                <i class="flaticon2-plus"></i>
+                                Tambah Data
                             </a>
                         </div>
                     </div>
                 </div>
 
                 <div class="kt-portlet__body">
-
                     <!--begin::Section-->
                     <div class="kt-section">
                         <div class="kt-section__content">
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table class="table table-hover table-striped mb-0">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>No</th>
-                                            <th>Hak Akses</th>
-                                            <th>Keterangan</th>
-                                            <th>Action</th>
+                                            <th class="text-uppercase text-muted font-weight-bold text-center" style="width: 5%; font-size: 11px; letter-spacing: 0.5px;">No</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" style="width: 25%; font-size: 11px; letter-spacing: 0.5px;">Hak Akses</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" style="font-size: 11px; letter-spacing: 0.5px;">Keterangan</th>
+                                            <th class="text-uppercase text-muted font-weight-bold text-center" style="width: 20%; font-size: 11px; letter-spacing: 0.5px;">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php
-                                        if ($datas != false) {
+                                        <?php if (!empty($datas)): ?>
+                                            <?php
                                             $i = 1;
-                                            foreach ($datas as $row) {
+                                            foreach ($datas as $row):
                                                 $key = service('enkripsi')->encode($row['sgroupNama']);
-                                                ?>
+                                            ?>
                                                 <tr>
-                                                    <th scope="row"><?= $i++ ?></th>
-                                                    <td><?= $row['sgroupNama'] ?></td>
-                                                    <td><?= $row['sgroupKeterangan'] ?></td>
+                                                    <td class="text-center font-weight-bold"><?= $i++ ?></td>
                                                     <td>
-                                                        <a href="<?= $update_url . $key ?>" title="Update" class="btn btn-sm btn-outline-primary btn-elevate btn-circle btn-icon">
-                                                            <span>
-                                                                <i class="fa fa-pencil-alt"></i>
-                                                            </span>
+                                                        <span class="kt-badge kt-badge--unified-brand kt-badge--inline kt-badge--pill font-weight-bold">
+                                                            <?= esc($row['sgroupNama']) ?>
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-muted"><?= esc($row['sgroupKeterangan']) ?></td>
+                                                    <td class="text-center">
+                                                        <a href="<?= ($update_url ?? '#') . $key ?>" title="Ubah Data" class="btn btn-sm btn-label-brand btn-bold">
+                                                            <i class="flaticon2-edit"></i> Ubah
                                                         </a>
-                                                        <a href="<?= $delete_url . $key ?>" title="Delete" id='ts_remove_row<?= $i; ?>' class="ts_remove_row btn btn-sm btn-outline-danger btn-elevate btn-circle btn-icon">
-                                                            <span>
-                                                                <i class="fa fa-trash-alt"></i>
-                                                            </span>
+                                                        <a href="<?= ($delete_url ?? '#') . $key ?>" title="Hapus Data" id="ts_remove_row<?= $i; ?>" class="ts_remove_row btn btn-sm btn-label-danger btn-bold ml-1">
+                                                            <i class="flaticon2-trash"></i> Hapus
                                                         </a>
                                                     </td>
                                                 </tr>
-                                        <?php
-                                            }
-                                        }
-                                        ?>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4 text-muted">
+                                                    <i class="flaticon2-information d-block mb-2" style="font-size: 2rem; color: #a1a5b7;"></i>
+                                                    Belum ada data yang tersedia.
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-
                     <!--end::Section-->
                 </div>
             </div>
-
             <!--end::Portlet-->
         </div>
     </div>

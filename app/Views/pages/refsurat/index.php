@@ -1,91 +1,82 @@
+<!-- BEGIN: Subheader -->
+<?= $this->include('layouts/subheader') ?>
+<!-- END: Subheader -->
 
-            <!-- BEGIN: Subheader -->
-            <?= $this->include('layouts/subheader') ?>
-            <!-- END: Subheader -->
-            
-            <!--Begin::Row-->
-            <!-- begin:: Content -->
-            <div class="kt-container  kt-container--fluid  kt-grid__item kt-grid__item--fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div id="response"></div>
-                        <!--begin::Portlet-->
-                        <div class="kt-portlet">
-                            <div class="kt-portlet__head">
-                                <div class="kt-portlet__head-label">
-                                    <h3 class="kt-portlet__head-title">
-                                        <?=strtoupper($page_judul)?>
-                                    </h3>
-                                </div>
-                                <div class="kt-portlet__head-toolbar">
-                                    <div class="kt-portlet__head-actions">
-                                        <a href="<?=$create_url?>" class="btn btn-outline-primary">
-                                            <span>
-                                                <i class="flaticon2-plus"></i>
-                                                <span>Create</span>
-                                            </span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-            
-                            <div class="kt-portlet__body">
-            
-                                <!--begin::Section-->
-                                <div class="kt-section">
-                                    <div class="kt-section__content">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead class="thead-light">
-                                                    <tr>
-                                                        <th>No</th>
-                                                        <th>categoryNama</th>
-
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                <?php
-                                                if($datas!=false)
-                                                {
-                                                    $i = 1;
-                                                    foreach($datas as $row)
-                                                    {
-                                                        $key = service('enkripsi')->encode($row['categoryId']);
-                                                ?>
-                                                    <tr>
-                                                        <th scope="row"><?=$i++?></th>
-                                                        <td><?=$row['categoryNama']?></td>
-                                                        <td>
-                                                        <a href="<?=$update_url.$key?>" title="Update" class="btn btn-sm btn-outline-primary btn-elevate btn-circle btn-icon">
-                                                            <span>
-                                                                <i class="fa fa-pencil-alt"></i>
-                                                            </span>
-                                                        </a>
-                                                        <a href="<?=$delete_url.$key?>" title="Delete" id='ts_remove_row<?= $i; ?>' class="ts_remove_row btn btn-sm btn-outline-danger btn-elevate btn-circle btn-icon">
-                                                            <span>
-                                                                <i class="fa fa-trash-alt"></i>
-                                                            </span>
-                                                        </a>
-                                                        </td>
-                                                    </tr>
-                                                <?php
-                                                    }
-                                                }
-                                                ?>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-            
-                                <!--end::Section-->
-                            </div>
+<!--Begin::Row-->
+<!-- begin:: Content -->
+<div class="kt-container  kt-container--fluid  kt-grid__item kt-grid__item--fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="response"></div>
+            <!--begin::Portlet-->
+            <div class="kt-portlet">
+                <div class="kt-portlet__head">
+                    <div class="kt-portlet__head-label">
+                        <h3 class="kt-portlet__head-title">
+                            <?= strtoupper(esc($page_judul ?? 'Master Format Surat')) ?>
+                        </h3>
+                    </div>
+                    <div class="kt-portlet__head-toolbar">
+                        <div class="kt-portlet__head-actions">
+                            <a href="<?= $create_url ?? '#' ?>" class="btn btn-brand btn-elevate btn-icon-sm" id="btn-create">
+                                <i class="flaticon2-plus"></i>
+                                Tambah Data
+                            </a>
                         </div>
-            
-                        <!--end::Portlet-->
                     </div>
                 </div>
+
+                <div class="kt-portlet__body">
+                    <!--begin::Section-->
+                    <div class="kt-section">
+                        <div class="kt-section__content">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-striped mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th class="text-uppercase text-muted font-weight-bold text-center" style="width: 5%; font-size: 11px; letter-spacing: 0.5px;">No</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" style="font-size: 11px; letter-spacing: 0.5px;">Format Surat / Kategori</th>
+                                            <th class="text-uppercase text-muted font-weight-bold text-center" style="width: 20%; font-size: 11px; letter-spacing: 0.5px;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($datas)): ?>
+                                            <?php
+                                            $i = 1;
+                                            foreach ($datas as $row):
+                                                $key = service('enkripsi')->encode($row['categoryId']);
+                                            ?>
+                                                <tr>
+                                                    <td class="text-center font-weight-bold"><?= $i++ ?></td>
+                                                    <td class="font-weight-bold text-dark"><?= esc($row['categoryNama']) ?></td>
+                                                    <td class="text-center">
+                                                        <a href="<?= ($update_url ?? '#') . $key ?>" title="Ubah Data" class="btn btn-sm btn-label-brand btn-bold">
+                                                            <i class="flaticon2-edit"></i> Ubah
+                                                        </a>
+                                                        <a href="<?= ($delete_url ?? '#') . $key ?>" title="Hapus Data" id="ts_remove_row<?= $i; ?>" class="ts_remove_row btn btn-sm btn-label-danger btn-bold ml-1">
+                                                            <i class="flaticon2-trash"></i> Hapus
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4 text-muted">
+                                                    <i class="flaticon2-information d-block mb-2" style="font-size: 2rem; color: #a1a5b7;"></i>
+                                                    Belum ada data yang tersedia.
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!--end::Section-->
+                </div>
             </div>
-            <!--End::Row-->
-            
+            <!--end::Portlet-->
+        </div>
+    </div>
+</div>
+<!--End::Row-->

@@ -263,6 +263,160 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Berkas Aman', $html);
         $this->assertStringContainsString('Berkas Dikarantina', $html);
     }
+
+    public function testMasterDataViewsUseConsistentPortletStructure(): void
+    {
+        $renderer = service('renderer');
+
+        // 1. Refkategori Index
+        $renderer->resetData();
+        $htmlKategori = $renderer->setData([
+            'page_judul' => 'Master Kategori Layanan',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('refkategori/create'),
+            'show_url' => base_url('refkategori/show'),
+            'edit_url' => base_url('refkategori/edit'),
+            's_user_group' => [],
+            'datas' => [],
+        ])->render('pages/refkategori/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlKategori);
+        $this->assertStringContainsString('Tambah Data', $htmlKategori);
+        $this->assertStringContainsString('btn-brand', $htmlKategori);
+        $this->assertStringContainsString('flaticon2-plus', $htmlKategori);
+
+        // 2. Refsurat Index
+        $renderer->resetData();
+        $htmlSurat = $renderer->setData([
+            'page_judul' => 'Master Format Surat',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('refsurat/create'),
+            'update_url' => base_url('refsurat/edit/'),
+            'delete_url' => base_url('refsurat/delete/'),
+            'datas' => [],
+        ])->render('pages/refsurat/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlSurat);
+        $this->assertStringContainsString('Tambah Data', $htmlSurat);
+        $this->assertStringContainsString('btn-brand', $htmlSurat);
+        $this->assertStringContainsString('thead-light', $htmlSurat);
+        $this->assertStringContainsString('text-uppercase text-muted font-weight-bold', $htmlSurat);
+        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlSurat);
+
+        // 3. Refsyarat Index
+        $renderer->resetData();
+        $htmlSyarat = $renderer->setData([
+            'page_judul' => 'Master Persyaratan Layanan',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('refsyarat/create'),
+            'update_url' => base_url('refsyarat/edit/'),
+            'delete_url' => base_url('refsyarat/delete/'),
+            'datas' => [],
+        ])->render('pages/refsyarat/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlSyarat);
+        $this->assertStringContainsString('Tambah Data', $htmlSyarat);
+        $this->assertStringContainsString('thead-light', $htmlSyarat);
+        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlSyarat);
+
+        // 4. Unit Index
+        $renderer->resetData();
+        $htmlUnit = $renderer->setData([
+            'page_judul' => 'Master Unit Kerja',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('unit/create'),
+            'update_url' => base_url('unit/edit/'),
+            'delete_url' => base_url('unit/delete/'),
+            'datas' => [],
+        ])->render('pages/unit/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlUnit);
+        $this->assertStringContainsString('Tambah Data', $htmlUnit);
+        $this->assertStringContainsString('thead-light', $htmlUnit);
+        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlUnit);
+
+        // 5. Pengguna Index
+        $renderer->resetData();
+        $htmlPengguna = $renderer->setData([
+            'page_judul' => 'Manajemen Pengguna',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('pengguna/create'),
+            'update_url' => base_url('pengguna/edit/'),
+            'delete_url' => base_url('pengguna/delete/'),
+            'resetpassword_url' => base_url('pengguna/resetpassword/'),
+            'datas' => [],
+        ])->render('pages/pengguna/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlPengguna);
+        $this->assertStringContainsString('Tambah Data', $htmlPengguna);
+        $this->assertStringContainsString('thead-light', $htmlPengguna);
+        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlPengguna);
+
+        // 6. Hakakses Index
+        $renderer->resetData();
+        $htmlHakakses = $renderer->setData([
+            'page_judul' => 'Manajemen Hak Akses',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('hakakses/create'),
+            'update_url' => base_url('hakakses/edit/'),
+            'delete_url' => base_url('hakakses/delete/'),
+            'datas' => [],
+        ])->render('pages/hakakses/index');
+
+        $this->assertStringContainsString('kt-portlet__head-title', $htmlHakakses);
+        $this->assertStringContainsString('Tambah Data', $htmlHakakses);
+        $this->assertStringContainsString('thead-light', $htmlHakakses);
+        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlHakakses);
+    }
+
+    public function testMasterDataViewsRenderStandardActionButtonsWithData(): void
+    {
+        $renderer = service('renderer');
+
+        // Test Unit with data
+        $renderer->resetData();
+        $htmlUnit = $renderer->setData([
+            'page_judul' => 'Master Unit Kerja',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('unit/create'),
+            'update_url' => base_url('unit/edit/'),
+            'delete_url' => base_url('unit/delete/'),
+            'datas' => [
+                ['unitId' => 1, 'unitKode' => 'FT', 'unitNama' => 'Fakultas Teknik']
+            ],
+        ])->render('pages/unit/index');
+
+        $this->assertStringContainsString('btn-label-brand', $htmlUnit);
+        $this->assertStringContainsString('btn-label-danger', $htmlUnit);
+        $this->assertStringContainsString('ts_remove_row', $htmlUnit);
+        $this->assertStringContainsString('Ubah', $htmlUnit);
+        $this->assertStringContainsString('Hapus', $htmlUnit);
+
+        // Test Pengguna with data
+        $renderer->resetData();
+        $htmlPengguna = $renderer->setData([
+            'page_judul' => 'Manajemen Pengguna',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('pengguna/create'),
+            'update_url' => base_url('pengguna/edit/'),
+            'delete_url' => base_url('pengguna/delete/'),
+            'resetpassword_url' => base_url('pengguna/resetpassword/'),
+            'datas' => [
+                [
+                    'susrNama' => 'admin_test',
+                    'susrSgroupNama' => 'ADMIN',
+                    'susrProfil' => 'Admin Utama',
+                    'susrLastLogin' => '2026-09-13 10:00:00',
+                ]
+            ],
+        ])->render('pages/pengguna/index');
+
+        $this->assertStringContainsString('btn-label-brand', $htmlPengguna);
+        $this->assertStringContainsString('btn-label-danger', $htmlPengguna);
+        $this->assertStringContainsString('btn-label-warning', $htmlPengguna);
+        $this->assertStringContainsString('ts_remove_row', $htmlPengguna);
+        $this->assertStringContainsString('ts_reset_row', $htmlPengguna);
+    }
 }
 
 

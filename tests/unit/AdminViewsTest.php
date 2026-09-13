@@ -9,6 +9,12 @@ use CodeIgniter\Test\CIUnitTestCase;
  */
 class AdminViewsTest extends CIUnitTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Config\Services::reset();
+    }
+
     public function testHomeIndexViewExistsAndRenders(): void
     {
         $renderer = service('renderer');
@@ -317,7 +323,7 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('kt-portlet__head-title', $htmlSyarat);
         $this->assertStringContainsString('Tambah Data', $htmlSyarat);
         $this->assertStringContainsString('thead-light', $htmlSyarat);
-        $this->assertStringContainsString('Belum ada data yang tersedia', $htmlSyarat);
+        $this->assertStringContainsString('Belum ada persyaratan', $htmlSyarat);
 
         // 4. Unit Index
         $renderer->resetData();
@@ -866,6 +872,86 @@ class AdminViewsTest extends CIUnitTestCase
         ])->render('pages/laporan/response');
 
         $this->assertStringContainsString('Tidak ada tiket pada periode', $htmlEmpty);
+    }
+
+    /**
+     * Memastikan refsyarat index dan form memakai standar portlet, aksi, dan lokalisasi terpadu.
+     */
+    public function testRefsyaratViewsUseConsistentPortletAndTableStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Master Persyaratan Layanan',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('refsyarat/create/'),
+            'update_url' => base_url('refsyarat/update/'),
+            'delete_url' => base_url('refsyarat/delete/'),
+            'datas' => [
+                [
+                    'berkasId' => 1,
+                    'layananNama' => 'Legalisir Ijazah',
+                    'berkasNama' => 'Fotokopi Ijazah',
+                    'berkasKeterangan' => 'Scan berwarna, maksimal 2 MB',
+                ],
+                [
+                    'berkasId' => 2,
+                    'layananNama' => 'Legalisir Ijazah',
+                    'berkasNama' => 'KTP Pemohon',
+                    'berkasKeterangan' => 'Masih berlaku',
+                ],
+            ],
+        ])->render('pages/refsyarat/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tambah Data', $htmlIndex);
+        $this->assertStringContainsString('thead-light', $htmlIndex);
+        $this->assertStringContainsString('btn-label-brand', $htmlIndex);
+        $this->assertStringContainsString('btn-label-danger', $htmlIndex);
+        $this->assertStringContainsString('ts_remove_row1', $htmlIndex);
+        $this->assertStringContainsString('ts_remove_row2', $htmlIndex);
+        $this->assertStringContainsString('id="ref_table"', $htmlIndex);
+        $this->assertStringContainsString('Ubah', $htmlIndex);
+        $this->assertStringContainsString('Hapus', $htmlIndex);
+        $this->assertStringContainsString('Legalisir Ijazah', $htmlIndex);
+        $this->assertStringContainsString('Fotokopi Ijazah', $htmlIndex);
+
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'page_judul' => 'Master Persyaratan Layanan',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'create_url' => base_url('refsyarat/create/'),
+            'update_url' => base_url('refsyarat/update/'),
+            'delete_url' => base_url('refsyarat/delete/'),
+            'datas' => false,
+        ])->render('pages/refsyarat/index');
+
+        $this->assertStringContainsString('Belum ada persyaratan', $htmlEmpty);
+
+        $renderer->resetData();
+        $htmlForm = $renderer->setData([
+            'page_judul' => 'Master Persyaratan Layanan',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'save_url' => base_url('refsyarat/save/'),
+            'status_page' => 'Create',
+            'datas' => false,
+            'ref_layanan' => [
+                ['layananId' => 10, 'layananNama' => 'Legalisir Ijazah'],
+            ],
+        ])->render('pages/refsyarat/form');
+
+        $this->assertStringContainsString('Simpan Data', $htmlForm);
+        $this->assertStringContainsString('Batal', $htmlForm);
+        $this->assertStringContainsString('Kembali', $htmlForm);
+        $this->assertStringContainsString('btn-brand', $htmlForm);
+        $this->assertStringContainsString('Nama Persyaratan', $htmlForm);
+        $this->assertStringContainsString('Pilih Layanan', $htmlForm);
+        $this->assertStringNotContainsString('placeholder="berkasNama"', $htmlForm);
+        $this->assertStringNotContainsString('placeholder="berkasKeterangan"', $htmlForm);
+        $this->assertStringContainsString('Legalisir Ijazah', $htmlForm);
+        $this->assertStringContainsString('required', $htmlForm);
     }
 }
 

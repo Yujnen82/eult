@@ -606,6 +606,72 @@ class AdminViewsTest extends CIUnitTestCase
         $jsContent = file_get_contents(FCPATH . 'assets/js/pages/eult-datatable.js');
         $this->assertStringContainsString('input[type="checkbox"]', $jsContent);
     }
+
+    /**
+     * Memastikan hakaksesmodul index dan response menggunakan standar portlet, tombol, dan checkbox terpadu.
+     */
+    public function testHakaksesmodulViewsUseConsistentPortletAndCheckboxStructure(): void
+    {
+        $renderer = \Config\Services::renderer();
+
+        // 1. Hakaksesmodul Index
+        $renderer->resetData();
+        $htmlIndex = $renderer->setData([
+            'page_judul' => 'Hak Akses Modul',
+            'user_group' => ['susrSgroupNama' => 'ADMIN'],
+            'show_url' => base_url('hakaksesmodul/response/'),
+            's_user_group' => [
+                ['sgroupNama' => 'ADMIN', 'sgroupKeterangan' => 'Administrator Sistem']
+            ],
+        ])->render('pages/hakaksesmodul/index');
+
+        $this->assertStringContainsString('kt-portlet', $htmlIndex);
+        $this->assertStringContainsString('btn-brand', $htmlIndex);
+        $this->assertStringContainsString('Tampilkan Hak Akses', $htmlIndex);
+        $this->assertStringContainsString('flaticon2-search-1', $htmlIndex);
+        $this->assertStringContainsString('Pilih Grup Pengguna', $htmlIndex);
+
+        // 2. Hakaksesmodul Response dengan Data
+        $renderer->resetData();
+        $htmlResponse = $renderer->setData([
+            'save_url' => base_url('hakaksesmodul/save/'),
+            'sgroupNama' => 'ADMIN',
+            'datas' => [
+                [
+                    'susrmodulNama' => 'modulgroup',
+                    'susrmodulNamaDisplay' => 'Modul Group',
+                    'susrmdgroupDisplay' => 'Administrator',
+                    'sgroupmodulSgroupNama' => 'ADMIN',
+                ],
+                [
+                    'susrmodulNama' => 'modul',
+                    'susrmodulNamaDisplay' => 'Modul',
+                    'susrmdgroupDisplay' => 'Administrator',
+                    'sgroupmodulSgroupNama' => '',
+                ],
+            ],
+        ])->render('pages/hakaksesmodul/response');
+
+        $this->assertStringContainsString('kt-portlet', $htmlResponse);
+        $this->assertStringContainsString('no-datatable', $htmlResponse);
+        $this->assertStringContainsString('btn-brand', $htmlResponse);
+        $this->assertStringContainsString('Simpan Perubahan Hak Akses', $htmlResponse);
+        $this->assertStringContainsString('kt-checkbox', $htmlResponse);
+        $this->assertStringContainsString('check_all_modul', $htmlResponse);
+        $this->assertStringContainsString('kt-badge--unified-brand', $htmlResponse);
+        $this->assertStringContainsString('modulgroup', $htmlResponse);
+        $this->assertStringContainsString('checked', $htmlResponse);
+
+        // 3. Hakaksesmodul Response saat Data Kosong
+        $renderer->resetData();
+        $htmlEmpty = $renderer->setData([
+            'save_url' => base_url('hakaksesmodul/save/'),
+            'sgroupNama' => 'ADMIN',
+            'datas' => false,
+        ])->render('pages/hakaksesmodul/response');
+
+        $this->assertStringContainsString('Belum ada modul', $htmlEmpty);
+    }
 }
 
 

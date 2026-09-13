@@ -7,6 +7,8 @@ var FormCustom = function() {
         var total = $('.check-modul-item').length;
         var checked = $('.check-modul-item:checked').length;
         $('#selected_count').text(checked);
+        $('#selected_count_badge').text(checked);
+
         if (total > 0 && checked === total) {
             $('#check_all_modul').prop('checked', true);
             $('#btn_toggle_all').html('<i class="flaticon2-cross"></i> Batal Pilih Semua');
@@ -19,7 +21,15 @@ var FormCustom = function() {
     var initCheckboxes = function() {
         $('#check_all_modul').off('change').on('change', function() {
             var isChecked = $(this).is(':checked');
-            $('.check-modul-item').prop('checked', isChecked);
+            // Jika ada filter pencarian, hanya ubah baris yang tampak
+            var $targetItems = $('.check-modul-item:visible').length > 0 && $('#quick_search_modul').val().trim() !== ''
+                ? $('.check-modul-item:visible')
+                : $('.check-modul-item');
+
+            $targetItems.prop('checked', isChecked);
+            $targetItems.each(function() {
+                $(this).closest('tr').toggleClass('table-row-selected', $(this).is(':checked'));
+            });
             updateCounter();
         });
 
@@ -28,16 +38,50 @@ var FormCustom = function() {
             var total = $('.check-modul-item').length;
             var checked = $('.check-modul-item:checked').length;
             var shouldCheck = (checked < total);
+
             $('.check-modul-item').prop('checked', shouldCheck);
             $('#check_all_modul').prop('checked', shouldCheck);
+            $('.check-modul-item').each(function() {
+                $(this).closest('tr').toggleClass('table-row-selected', shouldCheck);
+            });
             updateCounter();
         });
 
         $(document).off('change', '.check-modul-item').on('change', '.check-modul-item', function() {
+            $(this).closest('tr').toggleClass('table-row-selected', $(this).is(':checked'));
             updateCounter();
         });
 
+        // Klik baris untuk mempermudah toggle checkbox
+        $(document).off('click', '.matrix-row').on('click', '.matrix-row', function(e) {
+            if ($(e.target).is('input, label, span, a, button')) {
+                return;
+            }
+            var $cb = $(this).find('.check-modul-item');
+            $cb.prop('checked', !$cb.is(':checked')).trigger('change');
+        });
+
         updateCounter();
+    };
+
+    var initQuickSearch = function() {
+        $('#quick_search_modul').off('keyup input').on('keyup input', function() {
+            var val = $(this).val().toLowerCase().trim();
+            var visibleCount = 0;
+
+            $('.matrix-row').each(function() {
+                var rowText = $(this).text().toLowerCase();
+                var isMatch = rowText.indexOf(val) > -1;
+                $(this).toggle(isMatch);
+                if (isMatch) visibleCount++;
+            });
+
+            if (visibleCount === 0 && $('.matrix-row').length > 0) {
+                $('#empty_search_row').show();
+            } else {
+                $('#empty_search_row').hide();
+            }
+        });
     };
 
     var handleSubmit = function(form) {
@@ -89,6 +133,13 @@ var FormCustom = function() {
                 button.prop("disabled", false).removeClass('disabled');
                 button.html(originalHtml);
                 FormCustom.init();
+
+                // Scroll halus ke tabel matriks saat form_show dimuat
+                if ($form.attr('id') === 'form_show' && $('#response').length) {
+                    $('html, body').animate({
+                        scrollTop: Math.max(0, $('#response').offset().top - 135)
+                    }, 350);
+                }
             },
             error: function() {
                 button.prop("disabled", false).removeClass('disabled');
@@ -145,6 +196,7 @@ var FormCustom = function() {
             handleSubmitFormShow();
             handleSubmitForm();
             initCheckboxes();
+            initQuickSearch();
         }
     };
 }();

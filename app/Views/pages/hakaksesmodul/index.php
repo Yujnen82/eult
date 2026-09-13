@@ -6,8 +6,8 @@
 <div class="kt-container kt-container--fluid kt-grid__item kt-grid__item--fluid">
     <div class="row">
         <div class="col-md-12">
-            <!--begin::Portlet-->
-            <div class="kt-portlet">
+            <!--begin::Portlet Filter-->
+            <div class="kt-portlet mb-4">
                 <div class="kt-portlet__head">
                     <div class="kt-portlet__head-label">
                         <span class="kt-portlet__head-icon">
@@ -23,11 +23,11 @@
                 <form class="kt-form" action="<?= esc($show_url ?? '#') ?>" method="post" id="form_show">
                     <div class="kt-portlet__body">
                         <div class="form-group mb-0">
-                            <label class="font-weight-bold text-dark">
+                            <label class="font-weight-bold text-dark mb-2">
                                 Pilih Grup Pengguna <span class="text-danger">*</span>
                             </label>
                             <div class="row align-items-center">
-                                <div class="col-md-9 col-lg-8">
+                                <div class="col-md-8 col-lg-9">
                                     <select class="form-control m-select2" name="hakakses" id="select_role" required>
                                         <option value="">-- Pilih Grup Pengguna / Role --</option>
                                         <?php if (!empty($s_user_group)): ?>
@@ -42,8 +42,8 @@
                                         <i class="flaticon2-information mr-1"></i> Pilih grup pengguna untuk mengelola izin akses dan otorisasi menu modul sistem.
                                     </span>
                                 </div>
-                                <div class="col-md-3 col-lg-4 mt-3 mt-md-0">
-                                    <button type="submit" id="btn_save" class="btn btn-brand btn-elevate btn-icon-sm">
+                                <div class="col-md-4 col-lg-3 mt-3 mt-md-0 text-md-right">
+                                    <button type="submit" id="btn_save" class="btn btn-brand btn-elevate btn-icon-sm w-100 w-md-auto">
                                         <i class="flaticon2-search-1"></i>
                                         Tampilkan Hak Akses
                                     </button>
@@ -54,9 +54,11 @@
                 </form>
                 <!--end::Form-->
             </div>
-            <!--end::Portlet-->
+            <!--end::Portlet Filter-->
+
+            <!--begin::Matriks Response Container-->
+            <div id="response"></div>
+            <!--end::Matriks Response Container-->
         </div>
     </div>
 </div>
-
-<div id="response"></div>

@@ -375,7 +375,7 @@ $page_judul       = $page_judul ?? 'Validasi & Keamanan Berkas Digital';
                     <!-- JSON Raw Manifest Output -->
                     <div class="card p-3 border" style="border-radius: 4px; background: #fafbfc;">
                         <h6 class="font-weight-bold text-dark mb-2"><i class="la la-code"></i> Data Mentah Dokumen Manifest JSON:</h6>
-                        <pre id="json-manifest-viewer" class="bg-light p-3 border rounded mb-0" style="max-height: 380px; overflow-y: auto; font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace; font-size: 12px;"><?= json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?></pre>
+                        <pre id="json-manifest-viewer" class="bg-light p-3 border rounded mb-0" style="max-height: 380px; overflow-y: auto; font-family: monospace; font-size: 12px;"><?= json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES); ?></pre>
                     </div>
                 </div>
             </div>

@@ -117,7 +117,7 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
 <div class="kt-container kt-container--fluid kt-grid__item kt-grid__item--fluid">
 
     <!-- Baris 1: Banner Ringkasan Tiket -->
-    <div class="kt-portlet mb-4" style="border-top: 4px solid #5d78ff; box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.05); border-radius: 4px; background: #ffffff;">
+    <div class="kt-portlet mb-4" style="border-top: 2px solid #5d78ff; box-shadow: 0px 0px 13px 0px rgba(82, 63, 105, 0.05); border-radius: 4px; background: #ffffff;">
         <div class="kt-portlet__body p-4">
             <div class="d-flex flex-wrap align-items-center justify-content-between">
                 <div class="d-flex align-items-center mb-3 mb-md-0">
@@ -234,7 +234,7 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
                     <?php if (!empty($pesan)): ?>
                     <div class="mb-3">
                         <label class="text-muted font-weight-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Catatan Permohonan</label>
-                        <div class="p-3 bg-light rounded text-body" style="font-size: 12.5px; border-left: 3px solid #5d78ff;">
+                        <div class="p-3 rounded text-body" style="font-size: 12.5px; background: rgba(93,120,255,0.05); border: 1px solid rgba(93,120,255,0.15);">
                             <?= nl2br(esc($pesan)) ?>
                         </div>
                     </div>

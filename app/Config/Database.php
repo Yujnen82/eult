@@ -20,15 +20,16 @@ class Database extends Config
     public string $defaultGroup = 'default';
 
     /**
-     * Koneksi utama db_newtiket — kredensial dari .env (EULT_DB_*).
+     * Koneksi utama db_newtiket — kredensial WAJIB dari .env (EULT_DB_*);
+     * tidak ada kredensial bawaan yang ter-commit di repo.
      *
      * @var array<string, mixed>
      */
     public array $default = [
         'DSN'          => '',
         'hostname'     => 'localhost',
-        'username'     => 'root',
-        'password'     => 'root',
+        'username'     => '',
+        'password'     => '',
         'database'     => 'db_newtiket',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
@@ -167,8 +168,8 @@ class Database extends Config
     public array $dbult = [
         'DSN'          => '',
         'hostname'     => 'localhost',
-        'username'     => 'root',
-        'password'     => 'root',
+        'username'     => '',
+        'password'     => '',
         'database'     => 'db_ult',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',

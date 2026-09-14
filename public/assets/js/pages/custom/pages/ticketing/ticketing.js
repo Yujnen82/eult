@@ -473,6 +473,7 @@ const KTTicketing = function () {
                 }).then(function (e) {
                     e.value &&
                     $.ajax({
+                        type: 'POST',
                         url: $this.href,
                         success: data => {
                             var res = (typeof data === 'string' ? JSON.parse(data) : data);
@@ -637,6 +638,7 @@ const KTTicketing = function () {
                 }).then(function (e) {
                     e.value &&
                     $.ajax({
+                        type: 'POST',
                         url: $this.href,
                         success: data => {
                             var res = (typeof data === 'string' ? JSON.parse(data) : data);
@@ -756,6 +758,7 @@ const KTTicketing = function () {
                 }).then(function (e) {
                     e.value &&
                     $.ajax({
+                        type: 'POST',
                         url: $this.href,
                         success: data => {
                             var res = (typeof data === 'string' ? JSON.parse(data) : data);

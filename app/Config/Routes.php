@@ -28,6 +28,7 @@ $routes->group('otentifikasi', static function ($routes) {
 $routes->group('cektiket', static function ($routes) {
     $routes->get('index/(:any)', 'Cektiket::index/$1');
     $routes->post('save_replies', 'Cektiket::saveReplies');
+    $routes->post('save_replies/(:any)', 'Cektiket::saveReplies/$1');
     $routes->post('rating/(:any)', 'Cektiket::rating/$1');
     $routes->get('cetakterima/(:any)', 'Cektiket::cetakterima/$1');
     $routes->get('loadpdf/(:any)', 'Cektiket::loadpdf/$1');
@@ -63,22 +64,27 @@ $routes->group('ticketing', ['filter' => 'auth'], static function ($routes) {
     $routes->post('rating', 'Ticketing::rating');
     $routes->get('create_surat/(:any)', 'Ticketing::createSurat/$1');
     $routes->get('edit_surat/(:any)', 'Ticketing::editSurat/$1');
+    // Form surat (form_surat.php / form_surat_ktm.php) mengirim POST ke
+    // save_url = delivered/ dan delivered_ktm/; tombol Preview mengirim
+    // POST ke get_preview lalu membuka preview/(:any) via GET.
     $routes->post('save_surat', 'Ticketing::saveSurat');
-    $routes->get('delivered/(:any)', 'Ticketing::delivered/$1');
+    $routes->post('delivered', 'Ticketing::delivered');
+    $routes->post('delivered_ktm', 'Ticketing::delivered');
     $routes->get('preview/(:any)', 'Ticketing::preview/$1');
-    $routes->get('get_preview/(:any)', 'Ticketing::getPreview/$1');
+    $routes->post('get_preview', 'Ticketing::getPreview');
+    $routes->post('get_preview_ktm', 'Ticketing::getPreview');
     $routes->get('cetaksurat/(:any)', 'Ticketing::cetaksurat/$1');
     $routes->get('assign/(:any)', 'Ticketing::assign/$1');
     $routes->post('assigned', 'Ticketing::assigned');
     $routes->get('accept/(:any)', 'Ticketing::accept/$1');
     $routes->post('accepted', 'Ticketing::accepted');
-    $routes->get('terima/(:any)', 'Ticketing::terima/$1');
-    $routes->get('tolak/(:any)', 'Ticketing::tolak/$1');
+    // Aksi pengubah status tiket hanya lewat POST agar dilindungi filter CSRF.
+    $routes->post('terima/(:any)', 'Ticketing::terima/$1');
     $routes->post('tolak/(:any)', 'Ticketing::tolak/$1');
     $routes->get('validasi/(:any)', 'Ticketing::validasi/$1');
-    $routes->get('validated/(:any)', 'Ticketing::validated/$1');
-    $routes->get('last_validated/(:any)', 'Ticketing::lastValidated/$1');
-    $routes->get('validasiEktm/(:any)', 'Ticketing::validasiEktm/$1');
+    $routes->post('validated', 'Ticketing::validated');
+    $routes->post('last_validated/(:any)', 'Ticketing::lastValidated/$1');
+    $routes->post('validasiEktm/(:any)', 'Ticketing::validasiEktm/$1');
     $routes->get('edit_surat_ktm/(:any)', 'Ticketing::editSuratKtm/$1');
     $routes->get('loadattach/(:any)', 'Ticketing::loadattach/$1');
     $routes->get('loadpdf/(:any)', 'Ticketing::loadpdf/$1');
@@ -213,4 +219,5 @@ $routes->group('pengguna', ['filter' => 'auth'], static function ($routes) {
     $routes->post('save', 'Pengguna::save');
     $routes->post('delete/(:any)', 'Pengguna::delete/$1');
     $routes->post('resetpassword', 'Pengguna::resetpassword');
+    $routes->post('resetpassword/(:any)', 'Pengguna::resetpassword/$1');
 });

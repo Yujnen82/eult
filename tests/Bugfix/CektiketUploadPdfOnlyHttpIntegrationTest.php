@@ -41,6 +41,8 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
     /** @var list<string> */
     private array $berkasSementara = [];
 
+    private bool $tiketDibuatOlehTest = false;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -74,6 +76,11 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
     {
         $this->koneksi->table('d_replies')->where('repliesTicketId', self::TIKET_UJI)->delete();
 
+        if ($this->tiketDibuatOlehTest) {
+            $this->koneksi->table('d_ticketing')->where('ticketTrackingId', self::TIKET_UJI)->delete();
+            $this->tiketDibuatOlehTest = false;
+        }
+
         foreach ($this->berkasChatTersimpan() as $berkas) {
             unlink($berkas);
         }
@@ -99,9 +106,10 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
 
     public function testLampiranJpgDitolakTanpaEfekSamping(): void
     {
-        $hasil = $this->postBerkasLive('cektiket/save_replies', [
-            'repliesMessage'  => 'uji tolak lampiran jpg',
-            'repliesTicketId' => self::TIKET_UJI,
+        // saveReplies() kini mengidentifikasi tiket dari kunci terenkripsi di
+        // URL (bukan field repliesTicketId mentah) — lihat Cektiket::saveReplies().
+        $hasil = $this->postBerkasLive('cektiket/save_replies/' . $this->kunciTiketUji(), [
+            'repliesMessage' => 'uji tolak lampiran jpg',
         ], 'lampiran.jpg', 'image/jpeg', $this->kontenJpeg());
 
         self::assertSame(200, $hasil['status'], 'Penolakan tipe berkas SHALL memakai respons JSON eult_message_kirim() (HTTP 200). Body: ' . $hasil['body']);
@@ -122,9 +130,8 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
 
     public function testLampiranPdfDiterimaDanTersimpan(): void
     {
-        $hasil = $this->postBerkasLive('cektiket/save_replies', [
-            'repliesMessage'  => 'uji terima lampiran pdf',
-            'repliesTicketId' => self::TIKET_UJI,
+        $hasil = $this->postBerkasLive('cektiket/save_replies/' . $this->kunciTiketUji(), [
+            'repliesMessage' => 'uji terima lampiran pdf',
         ], 'lampiran.pdf', 'application/pdf', self::KONTEN_PDF);
 
         // 303 See Other: status redirect CI4 untuk request POST (Post/Redirect/Get).
@@ -166,6 +173,28 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
         self::assertStringContainsString('Lampirkan PDF (opsional', $body, 'Label berkas SHALL menyebut PDF saja.');
         self::assertStringNotContainsString('image/jpeg', $body, 'Input berkas SHALL TIDAK lagi menyebut JPG.');
         self::assertStringNotContainsString('image/png', $body, 'Input berkas SHALL TIDAK lagi menyebut PNG.');
+    }
+
+    /**
+     * Kunci terenkripsi tiket uji. Tiket harus ada di d_ticketing karena
+     * saveReplies() menolak (403) kunci yang tidak merujuk tiket nyata.
+     */
+    private function kunciTiketUji(): string
+    {
+        $ada = $this->koneksi->table('d_ticketing')->where('ticketTrackingId', self::TIKET_UJI)->countAllResults();
+
+        if ($ada === 0) {
+            $this->koneksi->table('d_ticketing')->insert([
+                'ticketTrackingId' => self::TIKET_UJI,
+                'ticketName'       => 'Uji Upload',
+                'ticketEmail'      => 'uji-upload@example.invalid',
+                'ticketCreated'    => date('Y-m-d H:i:s'),
+                'ticketStatus'     => 1,
+            ]);
+            $this->tiketDibuatOlehTest = true;
+        }
+
+        return (string) $this->enkripsi->encode(self::TIKET_UJI);
     }
 
     private function kontenJpeg(): string
@@ -232,7 +261,7 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
         }
 
         curl_setopt_array($ch, $opsi);
-        curl_exec($ch);
+        $html = curl_exec($ch);
         $errno = curl_errno($ch);
         $error = curl_error($ch);
 
@@ -248,15 +277,17 @@ final class CektiketUploadPdfOnlyHttpIntegrationTest extends CIUnitTestCase
 
         self::assertSame(0, $errno, sprintf('cURL SHALL berhasil mengambil token CSRF dari server dev live (GET login) tanpa error transport (errno=%d: %s).', $errno, $error));
 
-        $isiJar = (string) file_get_contents($jarKuki);
-
+        // Token dibaca dari hidden input csrf_field() pada HTML, BUKAN dari
+        // nilai cookie: dengan Config\Security::$tokenRandomize = true nilai
+        // cookie adalah hash mentah, sedangkan token yang diverifikasi server
+        // adalah bentuk teracak yang hanya ada di HTML/header respons.
         self::assertMatchesRegularExpression(
-            '/csrf_cookie_name\s+([0-9a-f]+)/',
-            $isiJar,
-            'Prasyarat: cookie csrf_cookie_name SHALL ada pada cookie jar setelah GET login (Config\\Security::$csrfProtection = \'cookie\').'
+            '/name="csrf_test_name"\\s+value="([0-9a-f]+)"/',
+            (string) $html,
+            'Prasyarat: HTML halaman login SHALL memuat hidden input csrf_test_name (csrf_field()).'
         );
 
-        preg_match('/csrf_cookie_name\s+([0-9a-f]+)/', $isiJar, $tangkapan);
+        preg_match('/name="csrf_test_name"\\s+value="([0-9a-f]+)"/', (string) $html, $tangkapan);
 
         return ['jar' => $jarKuki, 'token' => 'csrf_test_name', 'hash' => $tangkapan[1]];
     }

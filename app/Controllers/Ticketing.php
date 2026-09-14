@@ -56,6 +56,39 @@ class Ticketing extends BaseController
         return $this->request->isAJAX();
     }
 
+    /**
+     * Decode kunci tiket dari URL/form dan pastikan pengguna berhak atas
+     * tiket tersebut. Mengirim respons JSON 403 (dan menghentikan request)
+     * bila kunci tidak valid atau tiket berada di luar cakupan unit pengguna.
+     *
+     * @return string Nomor tiket (ticketTrackingId) hasil decode.
+     */
+    private function tiketTerotorisasi(string $kunci): string
+    {
+        $idTiket = $this->enkripsi->decode($kunci);
+
+        if (! is_string($idTiket) || $idTiket === '' || ! $this->bolehAksesTiket($idTiket)) {
+            $this->response->setStatusCode(403);
+            eult_message_kirim('Anda tidak berhak mengakses tiket ini.', 'error');
+        }
+
+        return $idTiket;
+    }
+
+    /**
+     * Sama dengan tiketTerotorisasi() untuk nomor tiket mentah yang dikirim
+     * dari field tersembunyi form (ticketIdOld, repliesTicketId, nomorTiket).
+     */
+    private function tiketMentahTerotorisasi(string $idTiket): string
+    {
+        if ($idTiket === '' || ! $this->bolehAksesTiket($idTiket)) {
+            $this->response->setStatusCode(403);
+            eult_message_kirim('Anda tidak berhak mengakses tiket ini.', 'error');
+        }
+
+        return $idTiket;
+    }
+
     public function index(): string
     {
         $data                 = $this->getMaster($this->pathPage . $this->pageIndex);
@@ -70,6 +103,35 @@ class Ticketing extends BaseController
         return view($this->template, $data);
     }
 
+    /**
+     * Nama view template cetak surat (pages/ticketing/cetak/cetak_N). Nilai
+     * t_surat.tsuratForm yang kosong/tidak dikenal jatuh ke cetak_1.
+     */
+    private function templateCetak(?string $form): string
+    {
+        $form = basename((string) $form);
+
+        if ($form === '' || ! is_file(APPPATH . 'Views/' . $this->pathPage . 'cetak/' . $form . '.php')) {
+            return 'cetak_1';
+        }
+
+        return $form;
+    }
+
+    /**
+     * Rentang tanggal "dd/mm/yyyy / dd/mm/yyyy" dari filter -> [awal, akhir] Y-m-d.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function rentangTanggal(string $tanggal): array
+    {
+        $pecah = explode('/', str_replace(' ', '', $tanggal));
+        $awal  = strtotime($pecah[0] ?? '') ?: time();
+        $akhir = strtotime($pecah[1] ?? '') ?: $awal;
+
+        return [date('Y-m-d', $awal), date('Y-m-d', $akhir)];
+    }
+
     public function response(): string
     {
         if (! $this->validate(['rentangTanggal' => 'required'])) {
@@ -78,22 +140,29 @@ class Ticketing extends BaseController
 
         $sesi          = $this->pengguna;
         $tanggal       = (string) $this->request->getPost('rentangTanggal');
-        $layanan       = $this->request->getPost('layanan');
+        $layanan       = (string) $this->request->getPost('layanan');
         $statusLayanan = (string) ($this->request->getPost('status_layanan') ?? '');
 
         session()->set('tanggal', $tanggal);
-        $pecah        = explode('/', str_replace(' ', '', $tanggal));
-        $tanggalAwal  = date('Y-m-d', strtotime($pecah[0]));
-        $tanggalAkhir = date('Y-m-d', strtotime($pecah[1]));
+        [$tanggalAwal, $tanggalAkhir] = $this->rentangTanggal($tanggal);
 
-        $datas = ($sesi['susrSgroupNama'] === 'ADMIN' || strpos($sesi['susrSgroupNama'], 'OPERATOR') !== false)
-            ? $this->tiket->dataById("ticketCreated >= '$tanggalAwal 00:00:00' AND ticketCreated <= '$tanggalAkhir 23:59:59' AND runit.unitId = $layanan", $statusLayanan)
-            : $this->tiket->disposisiAll("ticketCreated >= '$tanggalAwal 00:00:00' AND ticketCreated <= '$tanggalAkhir 23:59:59' AND `sgroupunitSgroupNama` = '" . $sesi['susrSgroupNama'] . "'", $statusLayanan);
+        $kondisi = [
+            'ticketCreated >=' => $tanggalAwal . ' 00:00:00',
+            'ticketCreated <=' => $tanggalAkhir . ' 23:59:59',
+        ];
+
+        if ($sesi['susrSgroupNama'] === 'ADMIN' || strpos($sesi['susrSgroupNama'], 'OPERATOR') !== false) {
+            $kondisi['runit.unitId'] = $layanan;
+            $datas                   = $this->tiket->dataById($kondisi, $statusLayanan);
+        } else {
+            $kondisi['sgroupunitSgroupNama'] = $sesi['susrSgroupNama'];
+            $datas                           = $this->tiket->disposisiAll($kondisi, $statusLayanan);
+        }
 
         $data                  = $this->getMaster($this->pathPage . $this->pageIndex);
         $data['isProduksi']    = strpos($this->pengguna['susrSgroupNama'], 'PRODUKSI');
         $data['isVerifikator'] = strpos($this->pengguna['susrSgroupNama'], 'VERIFIKATOR');
-        $data['sgroup']        = $this->tiket->ambilSatu('s_user_group_unit', "sgroupunitSgroupNama = '" . $this->pengguna['susrSgroupNama'] . "' and sgroupunitIsHome > 0");
+        $data['sgroup']        = $this->tiket->ambilSatu('s_user_group_unit', ['sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'], 'sgroupunitIsHome >' => 0]);
         $data['user_group']    = $sesi['susrSgroupNama'];
         $data['export_url']    = site_url($this->controllerName . '/export');
         $data['datas']         = $datas;
@@ -109,23 +178,20 @@ class Ticketing extends BaseController
         $datas = $id === 'true' ? $this->tiket->getLayanan() : $this->tiket->getLayanan($id);
 
         if ($datas !== false) {
-            $i      = 0;
-            $kepala = '';
+            $kepala = null;
             $opsi   = '<option value="">Pilih Layanan</option>';
             foreach ($datas as $row) {
-                $kepalaBaru = $row['jenislayananNama'];
-                if ($kepala !== $kepalaBaru) {
-                    $kepala = $kepalaBaru;
-                    if ($i > 1) {
+                if ($row['jenislayananNama'] !== $kepala) {
+                    if ($kepala !== null) {
                         $opsi .= '</optgroup>';
                     }
-                    $opsi .= '<optgroup label="' . $kepala . '">';
+                    $kepala = $row['jenislayananNama'];
+                    $opsi .= '<optgroup label="' . esc($kepala) . '">';
                 }
-                $opsi .= '<option value="' . $row['layananId'] . '">' . $row['layananNama'] . ' (' . $row['unitNama'] . ')</option>';
-                if ($i === count($datas)) {
-                    $opsi .= '</optgroup>';
-                }
-                $i++;
+                $opsi .= '<option value="' . esc($row['layananId']) . '">' . esc($row['layananNama']) . ' (' . esc($row['unitNama']) . ')</option>';
+            }
+            if ($kepala !== null) {
+                $opsi .= '</optgroup>';
             }
 
             return $this->response->setBody($opsi);
@@ -201,10 +267,10 @@ class Ticketing extends BaseController
 
     public function update(string $kunci = '')
     {
-        $terbuka         = $this->enkripsi->decode($kunci);
+        $terbuka         = $this->tiketTerotorisasi($kunci);
         $datas           = $this->tiket->byId(['ticketTrackingId' => $terbuka]);
         $pengguna        = $this->tiket->ambilSatu('s_user_group', ['sgroupNama' => $this->pengguna['susrSgroupNama']]);
-        $arsip           = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $terbuka . "' AND archiveJenis = 'TIKET'");
+        $arsip           = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $terbuka, 'archiveJenis' => 'TIKET']);
         $data            = [
             'page_judul'  => 'Tiket Unit Layanan Terpadu',
             'save_url'    => site_url($this->controllerName . '/save') . '/',
@@ -226,18 +292,19 @@ class Ticketing extends BaseController
 
     public function createSurat(string $kunci = '')
     {
-        $id    = $this->enkripsi->decode($kunci);
+        $id    = $this->tiketTerotorisasi($kunci);
         $datas = $this->tiket->ambilSatu('d_ticketing', ['ticketTrackingId' => $id]);
         $surat = $datas !== false ? $this->tiket->ambilSatu('t_surat', ['tsuratLayananId' => $datas['ticketCategories']]) : false;
 
         return $this->response->setJSON(['response' => view($this->pathPage . 'form_surat', [
-            'pejabatTtd'  => $this->tiket->getPejabatTtd($this->pengguna['susrSgroupNama']),
+            'pejabatTtd'  => $this->tiket->getPejabatTtd($this->pengguna['susrSgroupNama']) ?: [],
             'page_judul'  => 'Tiket Unit Layanan Terpadu',
             'scripts'     => [$this->pathJs . 'ticketing'],
             'save_url'    => site_url($this->controllerName . '/delivered') . '/',
             'status_page' => 'Create',
             'datas'       => false,
             'surat'       => $surat,
+            'kunci'       => $kunci,
             'user_data'   => $this->pengguna['susrSgroupNama'],
             'preview_url' => site_url('ticketing/get_preview'),
         ])]);
@@ -245,7 +312,7 @@ class Ticketing extends BaseController
 
     public function editSurat(string $kunci = '')
     {
-        $id    = $this->enkripsi->decode($kunci);
+        $id    = $this->tiketTerotorisasi($kunci);
         $datas = $this->tiket->getSurat(['ticketTrackingId' => $id]);
 
         return $this->response->setJSON(['response' => view($this->pathPage . 'form_surat', [
@@ -255,7 +322,8 @@ class Ticketing extends BaseController
             'status_page' => 'Update',
             'datas'       => $datas,
             'surat'       => $datas,
-            'pejabatTtd'  => $this->tiket->getPejabatTtd($this->pengguna['susrSgroupNama']),
+            'kunci'       => $kunci,
+            'pejabatTtd'  => $this->tiket->getPejabatTtd($this->pengguna['susrSgroupNama']) ?: [],
             'user_data'   => $this->pengguna['susrSgroupNama'],
             'preview_url' => site_url('ticketing/get_preview'),
         ])]);
@@ -271,7 +339,7 @@ class Ticketing extends BaseController
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
 
-        $idSurat   = $this->enkripsi->decode((string) $this->request->getPost('suratTrackingId'));
+        $idSurat   = $this->tiketTerotorisasi((string) $this->request->getPost('suratTrackingId'));
         $idLama    = $this->enkripsi->decode((string) $this->request->getPost('suratIdOld'));
         $pejabat   = explode(';', (string) $this->request->getPost('suratPejabatNIPDraft'));
         $datas     = $this->tiket->ambilSatu('d_ticketing', ['ticketTrackingId' => $idSurat]);
@@ -320,15 +388,14 @@ class Ticketing extends BaseController
 
     public function getPreview(?string $segmen = null)
     {
-        $this->validation->setRules([
+        // Simpan draf ke session; preview/(:any) membacanya lalu menghapusnya.
+        if ($this->validate([
             'suratJenis' => 'permit_empty', 'suratPerihal' => 'permit_empty',
             'suratLampiran' => 'permit_empty', 'suratTujuan' => 'permit_empty',
             'suratBody' => 'permit_empty', 'suratFooter' => 'permit_empty',
             'suratNomor' => 'permit_empty', 'suratTanggal' => 'permit_empty',
             'suratPejabatJabatanAnDraft' => 'permit_empty', 'suratPejabatNIPDraft' => 'permit_empty',
-        ]);
-
-        if ($this->validation->withRequest($this->request)->run()) {
+        ])) {
             session()->set('sess_surat', [
                 'suratJenis'                 => (string) $this->request->getPost('suratJenis'),
                 'suratPerihal'               => (string) $this->request->getPost('suratPerihal'),
@@ -342,11 +409,13 @@ class Ticketing extends BaseController
                 'suratPejabatNIPDraft'       => (string) $this->request->getPost('suratPejabatNIPDraft'),
             ]);
         }
+
+        return $this->response->setJSON(['status' => 'success']);
     }
 
     public function preview(string $kunci = '')
     {
-        $id       = $this->enkripsi->decode($kunci);
+        $id       = $this->tiketTerotorisasi($kunci);
         $datas    = $this->tiket->getSurat(['ticketTrackingId' => $id]);
         $sesiSurat = session()->get('sess_surat');
         $identitas = $this->tiket->ambilSatu('d_ticketing', ['ticketTrackingId' => $id]);
@@ -395,30 +464,34 @@ class Ticketing extends BaseController
             session()->remove('sess_surat');
         }
 
+        // Template cetak_* mengakses $datas sebagai array.
         $baris = is_object($datas) ? (array) $datas : $datas;
-        $form  = is_array($baris) ? ($baris['tsuratForm'] ?? 'form_1') : ($datas->tsuratForm ?? 'form_1');
+        $form  = $this->templateCetak(is_array($baris) ? ($baris['tsuratForm'] ?? null) : null);
         $mpdf  = ($form === 'cetak_5') ? new Mpdf(['format' => 'Legal-P']) : new Mpdf();
         $mpdf->showImageErrors = true;
-        $mpdf->WriteHTML(view($this->pathPage . 'cetak/' . $form, ['datas' => $datas, 'mahasiswa' => $mahasiswa, 'pegawai' => $pegawai]));
+        $mpdf->WriteHTML(view($this->pathPage . 'cetak/' . $form, ['datas' => $baris, 'mahasiswa' => $mahasiswa, 'pegawai' => $pegawai, 'judulSurat' => '', 'isiSurat' => '']));
 
         $kaki = '';
-        if ($datas) {
-            $suratFooter = is_array($baris) ? ($baris['suratFooter'] ?? '') : ($datas->suratFooter ?? '');
-            $kakiSurat   = is_array($baris) ? ($baris['footerSurat'] ?? $suratFooter) : ($datas->footerSurat ?? $suratFooter);
-            $kaki        = str_replace('<li>', "<li style='font-size: 8pt;'>", (string) (! empty($suratFooter) ? $suratFooter : $kakiSurat));
+        if (is_array($baris)) {
+            $suratFooter = (string) ($baris['suratFooter'] ?? '');
+            $kakiSurat   = (string) ($baris['footerSurat'] ?? $suratFooter);
+            $kaki        = str_replace('<li>', "<li style='font-size: 8pt;'>", $suratFooter !== '' ? $suratFooter : $kakiSurat);
         }
         $mpdf->SetHTMLFooter($kaki);
-        $mpdf->Output();
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'inline; filename="preview_' . str_replace('-', '', (string) $id) . '.pdf"')
+            ->setBody($mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN));
     }
 
     public function assign(string $kunci = '')
     {
-        $terbuka   = $this->enkripsi->decode($kunci);
+        $terbuka   = $this->tiketTerotorisasi($kunci);
         $datas     = $this->tiket->byId(['ticketTrackingId' => $terbuka]);
         $disposisi = $this->tiket->disposisiById(['ticketTrackingId' => $terbuka, 'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama']]);
         $unit      = $this->tiket->getUnitByHakakses($this->pengguna['susrSgroupNama']);
-        $arsip     = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $terbuka . "' AND archiveJenis = 'TIKET'");
+        $arsip     = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $terbuka, 'archiveJenis' => 'TIKET']);
 
         return $this->response->setJSON(['response' => view($this->pathPage . 'disposisi', [
             'scripts'            => [$this->pathJs . 'ticketing'],
@@ -443,11 +516,11 @@ class Ticketing extends BaseController
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
 
-        $idLama     = (string) $this->request->getPost('ticketIdOld');
+        $idLama     = $this->tiketMentahTerotorisasi((string) $this->request->getPost('ticketIdOld'));
         $prioritas  = (string) $this->request->getPost('ticketPriority');
-        $tujuanUnit = $this->request->getPost('ticketAssign');
+        $tujuanUnit = (string) $this->request->getPost('ticketAssign');
         $pesan      = (string) $this->request->getPost('ticketMessage');
-        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idLama), "archiveTrackingId='" . $idLama . "'");
+        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idLama), ['archiveTrackingId' => $idLama]);
 
         $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $idLama, 'archiveJenis' => 'ASSIGN'];
         $param     = [
@@ -493,12 +566,12 @@ class Ticketing extends BaseController
 
     public function accept(string $kunci = '')
     {
-        $terbuka   = $this->enkripsi->decode($kunci);
+        $terbuka   = $this->tiketTerotorisasi($kunci);
         $datas     = $this->tiket->byId(['ticketTrackingId' => $terbuka]);
         $disposisi = $this->tiket->disposisiById(['ticketTrackingId' => $terbuka, 'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama']]);
         $unit      = $this->tiket->getUnitByHakakses($this->pengguna['susrSgroupNama']);
-        $sgroup    = $this->tiket->tabelRef('s_user_group_unit', "sgroupunitSgroupNama = '" . $this->pengguna['susrSgroupNama'] . "' and sgroupunitIsHome > 0");
-        $arsip     = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $terbuka . "' AND archiveJenis = 'TIKET'");
+        $sgroup    = $this->tiket->tabelRef('s_user_group_unit', ['sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'], 'sgroupunitIsHome >' => 0]);
+        $arsip     = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $terbuka, 'archiveJenis' => 'TIKET']);
 
         $isDisposisi = $datas !== false ? ($datas['disposisiIsTrue'] ?? false) : false;
         $unitTiket   = $datas !== false ? ($datas['ticketAssign'] ?? false) : false;
@@ -536,14 +609,14 @@ class Ticketing extends BaseController
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
 
-        $idLama     = (string) $this->request->getPost('ticketIdOld');
+        $idLama     = $this->tiketMentahTerotorisasi((string) $this->request->getPost('ticketIdOld'));
         $prioritas  = (string) $this->request->getPost('ticketPriority');
-        $tujuanUnit = $this->request->getPost('ticketAssign');
+        $tujuanUnit = (string) $this->request->getPost('ticketAssign');
         $pesan      = (string) $this->request->getPost('ticketMessage');
-        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idLama), "archiveTrackingId='" . $idLama . "'");
+        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idLama), ['archiveTrackingId' => $idLama]);
 
         $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $idLama, 'archiveJenis' => 'ACCEPT'];
-        $terakhir  = $this->tiket->disposisiLast("disposisiTicketId = '" . $idLama . "' AND disposisiUnit <> '" . $tujuanUnit . "'");
+        $terakhir  = $this->tiket->disposisiLast(['disposisiTicketId' => $idLama, 'disposisiUnit <>' => $tujuanUnit]);
 
         $param = [
             'ticketAssign'     => $tujuanUnit,
@@ -597,10 +670,10 @@ class Ticketing extends BaseController
 
     public function validasi(string $kunci = '')
     {
-        $terbuka   = $this->enkripsi->decode($kunci);
+        $terbuka   = $this->tiketTerotorisasi($kunci);
         $datas     = $this->tiket->byId(['ticketTrackingId' => $terbuka]);
         $disposisi = $this->tiket->disposisiById(['ticketTrackingId' => $terbuka, 'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama']]);
-        $arsip     = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $terbuka . "' AND archiveJenis = 'TIKET'");
+        $arsip     = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $terbuka, 'archiveJenis' => 'TIKET']);
 
         return $this->response->setJSON(['response' => view($this->pathPage . 'tandatangan', [
             'scripts'           => [$this->pathJs . 'ticketing'],
@@ -622,8 +695,8 @@ class Ticketing extends BaseController
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
 
-        $idLama    = (string) $this->request->getPost('ticketIdOld');
-        $terakhir  = $this->tiket->disposisiLast("disposisiTicketId = '" . $idLama . "'");
+        $idLama    = $this->tiketMentahTerotorisasi((string) $this->request->getPost('ticketIdOld'));
+        $terakhir  = $this->tiket->disposisiLast(['disposisiTicketId' => $idLama]);
         $unitAkhir = $terakhir !== false ? $terakhir['disposisiUnit'] : '';
         $pekerja   = $this->tiket->getTicketAssign('s_unit', ['unitId' => $unitAkhir]);
         $tautan    = base_url('validitas') . '/' . $this->enkripsi->encode($idLama);
@@ -663,11 +736,11 @@ class Ticketing extends BaseController
 
     public function detail(string $kunci = ''): string
     {
-        $id    = $this->enkripsi->decode($kunci);
+        $id    = $this->tiketTerotorisasi($kunci);
         $datas = $this->tiket->byId(['ticketTrackingId' => $id]);
 
-        $arsip  = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $id . "' AND archiveJenis = 'TIKET'");
-        $output = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $id . "' AND archiveJenis = 'OUTPUT'");
+        $arsip  = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $id, 'archiveJenis' => 'TIKET']);
+        $output = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $id, 'archiveJenis' => 'OUTPUT']);
 
         $this->tiket->ubah('d_replies', ['repliesRead' => '1'], ['repliesTicketId' => $id]);
 
@@ -700,17 +773,20 @@ class Ticketing extends BaseController
     public function rating()
     {
         $rating     = $this->request->getPost('rating');
-        $nomorTiket = (string) $this->request->getPost('nomorTiket');
+        $nomorTiket = $this->tiketMentahTerotorisasi((string) $this->request->getPost('nomorTiket'));
         $param      = ['ratingNilai' => $rating, 'ratingTicketId' => $nomorTiket];
 
-        $datas = $this->tiket->byId("ticketTrackingId = '" . $nomorTiket . "'");
+        $datas = $this->tiket->byId(['ticketTrackingId' => $nomorTiket]);
         $cek   = $this->tiket->ambilSatu('d_rating', ['ratingTicketId' => $nomorTiket]);
 
         $proses = empty($cek)
             ? $this->tiket->tambah('d_rating', $param)
             : $this->tiket->ubah('d_rating', $param, ['ratingTicketId' => $nomorTiket]);
 
-        $output   = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $nomorTiket . "' AND (archiveJenis = 'OUTPUT' or archiveJenis = 'TTD')");
+        $output = $this->tiket->tabelBuilder('d_archive')
+            ->where('archiveTrackingId', $nomorTiket)
+            ->whereIn('archiveJenis', ['OUTPUT', 'TTD'])
+            ->get()->getRowArray() ?? false;
         $lampiran = $output !== false ? $output['archiveFile'] : false;
 
         if ($datas !== false) {
@@ -720,6 +796,8 @@ class Ticketing extends BaseController
         if ($proses) {
             eult_message_kirim('Terimakasih Telah Mengisi IKM, Untuk layanan dengan permintaan berkas, berkas telah kami kirimkan via email. Mohon Periksa Email Anda.', 'success');
         }
+
+        eult_message_kirim('Rating gagal disimpan.', 'error');
     }
 
     public function terima(string $kunci = '')
@@ -728,7 +806,7 @@ class Ticketing extends BaseController
             return $this->response->setStatusCode(400)->setBody('Bad Request');
         }
 
-        $terbuka = $this->enkripsi->decode($kunci);
+        $terbuka = $this->tiketTerotorisasi($kunci);
         $proses  = $this->tiket->ubah('d_ticketing', [
             'ticketIsVerified' => 1,
             'ticketVerified'   => date('Y-m-d H:i:s'),
@@ -750,7 +828,7 @@ class Ticketing extends BaseController
             return $this->response->setStatusCode(400)->setBody('Bad Request');
         }
 
-        $terbuka = $this->enkripsi->decode($kunci);
+        $terbuka = $this->tiketTerotorisasi($kunci);
         $pesan   = (string) $this->request->getPost('pesan_tolak');
         $proses  = $this->tiket->ubah('d_ticketing', [
             'ticketStatus'     => 8,
@@ -761,7 +839,7 @@ class Ticketing extends BaseController
 
         if ($proses) {
             eult_save_history('Layanan telah ditolak oleh ' . $this->pengguna['susrProfil'] . '.<br/> Pesan: ' . $pesan, (string) $terbuka);
-            $datas = $this->tiket->byId("ticketTrackingId = '" . $terbuka . "'");
+            $datas = $this->tiket->byId(['ticketTrackingId' => $terbuka]);
             if ($datas !== false) {
                 $this->email->selesai((string) $datas['ticketEmail'], 'Berkas Permintaan EULT UNMUL #' . $terbuka, $datas, false);
             }
@@ -776,10 +854,12 @@ class Ticketing extends BaseController
     {
         $kunci ??= (string) $this->request->getPost('key');
         $terbuka = $this->enkripsi->decode($kunci);
+        // Kunci bisa berisi "idTiket;namaBerkas" (lihat cetaksurat) — otorisasi pada id tiketnya.
+        $this->tiketMentahTerotorisasi(is_string($terbuka) ? explode(';', $terbuka)[0] : '');
 
         if ($mode === 'sehari' || $this->request->getPost('pesanvalidasi') !== null) {
             $pesan   = (string) $this->request->getPost('pesanvalidasi');
-            $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), "archiveTrackingId='" . $terbuka . "'");
+            $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), ['archiveTrackingId' => $terbuka]);
 
             $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $terbuka, 'archiveJenis' => 'OUTPUT'];
 
@@ -832,7 +912,7 @@ class Ticketing extends BaseController
 
     public function validasiEktm(string $kunci = '')
     {
-        $terbuka       = $this->enkripsi->decode($kunci);
+        $terbuka       = $this->tiketTerotorisasi($kunci);
         $noPemohon     = (string) $this->request->getPost('ns_pemohon');
         $tglPemohon    = (string) $this->request->getPost('ts_pemohon');
         $noSurat       = (string) $this->request->getPost('ns_pengantar');
@@ -857,7 +937,7 @@ class Ticketing extends BaseController
         eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'], (string) $terbuka);
 
         $namaBerkas = 'OUTPUT_' . str_replace('-', '', (string) $terbuka) . '_' . date('YmdHis');
-        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), "archiveTrackingId='" . $terbuka . "'");
+        $arsipId    = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), ['archiveTrackingId' => $terbuka]);
 
         $this->tiket->tambah('d_archive', [
             'archiveId'         => $arsipId,
@@ -924,7 +1004,7 @@ class Ticketing extends BaseController
 
     public function editSuratKtm(string $kunci = '')
     {
-        $id    = $this->enkripsi->decode($kunci);
+        $id    = $this->tiketTerotorisasi($kunci);
         $datas = $this->tiket->getSurat(['ticketTrackingId' => $id]);
 
         return $this->response->setJSON(['response' => view($this->pathPage . 'form_surat_ktm', [
@@ -934,6 +1014,7 @@ class Ticketing extends BaseController
             'status_page' => 'Update',
             'datas'       => $datas,
             'surat'       => $datas,
+            'kunci'       => $kunci,
             'user_data'   => $this->pengguna['susrSgroupNama'],
             'preview_url' => site_url('ticketing/get_preview_ktm') . '/',
         ])]);
@@ -945,7 +1026,7 @@ class Ticketing extends BaseController
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
 
-        $idTiket = (string) $this->request->getPost('repliesTicketId');
+        $idTiket = $this->tiketMentahTerotorisasi((string) $this->request->getPost('repliesTicketId'));
 
         $namaFile = '';
         $berkas   = $this->request->getFile('chatFile');
@@ -993,10 +1074,10 @@ class Ticketing extends BaseController
                 ? $kodeAcak . '-' . sprintf('%03d', 1)
                 : $kodeAcak . '-' . sprintf('%03d', (int) substr((string) $cek['ticketTrackingId'], -3) + 1);
         } else {
-            $idTiket = $idLama;
+            $idTiket = $this->tiketMentahTerotorisasi($idLama);
         }
 
-        $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idTiket), "archiveTrackingId='" . $idTiket . "'");
+        $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $idTiket), ['archiveTrackingId' => $idTiket]);
 
         $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $idTiket, 'archiveJenis' => 'TIKET'];
         $param     = [
@@ -1019,7 +1100,7 @@ class Ticketing extends BaseController
             $proses                    = $this->tiket->tambah('d_ticketing', $param);
             eult_save_history('Tiket Telah Dibuat Oleh ' . $this->pengguna['susrProfil'], $idTiket);
 
-            $datas = $this->tiket->byId("ticketTrackingId = '" . $idTiket . "'");
+            $datas = $this->tiket->byId(['ticketTrackingId' => $idTiket]);
             if ($datas !== false) {
                 $this->email->buat((string) $datas['ticketEmail'], 'Tiket EULT UNMUL #' . $idTiket, $datas);
             }
@@ -1053,12 +1134,12 @@ class Ticketing extends BaseController
             return $this->response->setStatusCode(400)->setBody('Bad Request');
         }
 
-        $terbuka = $this->enkripsi->decode($kunci);
-        $arsip   = $this->tiket->tabelRef('d_archive', "archiveTrackingId = '" . $terbuka . "'");
+        $terbuka = $this->tiketTerotorisasi($kunci);
+        $arsip   = $this->tiket->tabelRef('d_archive', ['archiveTrackingId' => $terbuka]);
 
         if ($arsip !== false) {
             foreach ($arsip as $row) {
-                @unlink(WRITEPATH . 'uploads/ticketing/' . $row['archiveFile']);
+                @unlink(WRITEPATH . 'uploads/ticketing/' . basename((string) $row['archiveFile']));
             }
         }
 
@@ -1161,10 +1242,10 @@ class Ticketing extends BaseController
 
     public function loadimage(string $kunci = '')
     {
-        $nama   = $this->enkripsi->decode($kunci);
+        $nama   = basename((string) $this->enkripsi->decode($kunci));
         $lokasi = WRITEPATH . 'uploads/qrcode/' . $nama . '.png';
 
-        if (! is_file($lokasi)) {
+        if ($nama === '' || ! is_file($lokasi)) {
             return $this->response->setStatusCode(404)->setBody('File tidak ditemukan.');
         }
 
@@ -1175,19 +1256,22 @@ class Ticketing extends BaseController
 
     public function export(string $kunci = '')
     {
-        $id         = $this->enkripsi->decode($kunci);
-        $rentang    = explode('/', str_replace(' ', '', (string) session()->get('tanggal')));
-        $awal       = date('Y-m-d', strtotime($rentang[0] ?? 'now'));
-        $akhir      = date('Y-m-d', strtotime($rentang[1] ?? 'now'));
+        $id             = $this->tiketTerotorisasi($kunci);
+        [$awal, $akhir] = $this->rentangTanggal((string) session()->get('tanggal'));
 
         return $this->response->setJSON(
-            $this->tiket->disposisiAll("ticketCreated >= '$awal 00:00:00' AND ticketCreated <= '$akhir 23:59:59' AND `sgroupunitSgroupNama` = '" . $this->pengguna['susrSgroupNama'] . "' AND disposisiTicketId = '" . $id . "'")
+            $this->tiket->disposisiAll([
+                'ticketCreated >='     => $awal . ' 00:00:00',
+                'ticketCreated <='     => $akhir . ' 23:59:59',
+                'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'],
+                'disposisiTicketId'    => $id,
+            ])
         );
     }
 
     public function cetakterima(string $kunci = '')
     {
-        $id    = $this->enkripsi->decode($kunci);
+        $id    = $this->tiketTerotorisasi($kunci);
         $datas = $this->tiket->byId(['ticketTrackingId' => $id]);
 
         $this->qr->generate((string) (site_url($this->controllerName . '/detail') . '/' . $kunci), (string) $id);
@@ -1197,14 +1281,22 @@ class Ticketing extends BaseController
             'datas'        => $datas,
             'tanda_terima' => site_url('ticketing/tanda_terima'),
         ]));
-        $mpdf->Output();
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'inline; filename="tanda_terima_' . str_replace('-', '', (string) $id) . '.pdf"')
+            ->setBody($mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN));
     }
 
     public function cetaksurat(string $kode = '')
     {
         $terbuka   = $this->enkripsi->decode($kode);
         $pecah     = explode(';', (string) $terbuka);
+        $pecah[0]  = $this->tiketMentahTerotorisasi($pecah[0]);
+        $pecah[1]  = basename((string) ($pecah[1] ?? ''));
+        if ($pecah[1] === '') {
+            $pecah[1] = 'TTD_' . str_replace('-', '', $pecah[0]) . '_' . date('YmdHis');
+        }
         $datas     = $this->tiket->getSurat(['ticketTrackingId' => $pecah[0]]);
         $identitas = $this->tiket->ambilSatu('d_ticketing', ['ticketTrackingId' => $pecah[0]]);
 
@@ -1219,7 +1311,7 @@ class Ticketing extends BaseController
         ] : false;
         $pegawai = $identitas !== false ? $this->osm->pegawaiId((string) $identitas['ticketIdentitas']) : false;
 
-        $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $pecah[0]), "archiveTrackingId='" . $pecah[0] . "'");
+        $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', $pecah[0]), ['archiveTrackingId' => $pecah[0]]);
         $this->tiket->tambah('d_archive', [
             'archiveId'         => $arsipId,
             'archiveTrackingId' => $pecah[0],
@@ -1227,20 +1319,17 @@ class Ticketing extends BaseController
             'archiveFile'       => $pecah[1] . '.pdf',
         ]);
 
-        if (is_array($datas)) {
-            $datas = (object) $datas;
-        }
-
-        $form = ($datas && isset($datas->tsuratForm)) ? $datas->tsuratForm : 'form_1';
-        $mpdf = ($datas && ($datas->tsuratForm ?? '') === 'cetak_5') ? new Mpdf(['format' => 'Legal-P']) : new Mpdf();
+        // Template cetak_* mengakses $datas sebagai array.
+        $form = $this->templateCetak(is_array($datas) ? ($datas['tsuratForm'] ?? null) : null);
+        $mpdf = ($form === 'cetak_5') ? new Mpdf(['format' => 'Legal-P']) : new Mpdf();
         $mpdf->showImageErrors = true;
-        $mpdf->WriteHTML(view($this->pathPage . 'cetak/' . $form, ['datas' => $datas, 'mahasiswa' => $mahasiswa, 'pegawai' => $pegawai]));
+        $mpdf->WriteHTML(view($this->pathPage . 'cetak/' . $form, ['datas' => $datas, 'mahasiswa' => $mahasiswa, 'pegawai' => $pegawai, 'judulSurat' => '', 'isiSurat' => '']));
 
         $kaki = '';
-        if ($datas) {
-            $suratFooter = $datas->suratFooter ?? '';
-            $kakiSurat   = $datas->footerSurat ?? $suratFooter;
-            $kaki        = str_replace('<li>', "<li style='font-size: 8pt;'>", (string) (! empty($suratFooter) ? $suratFooter : $kakiSurat));
+        if (is_array($datas)) {
+            $suratFooter = (string) ($datas['suratFooter'] ?? '');
+            $kakiSurat   = (string) ($datas['footerSurat'] ?? $suratFooter);
+            $kaki        = str_replace('<li>', "<li style='font-size: 8pt;'>", $suratFooter !== '' ? $suratFooter : $kakiSurat);
         }
         $mpdf->SetHTMLFooter($kaki);
         $mpdf->Output(WRITEPATH . 'uploads/ticketing/' . $pecah[1] . '.pdf', 'F');

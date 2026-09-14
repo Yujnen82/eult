@@ -141,9 +141,9 @@
 					<p>Samarinda, <?= empty($datas['suratTanggal']) ? '' : datetoindo($datas['suratTanggal']) ?></p>
 					<p style="margin-bottom: 0px"><?= empty($datas['suratPejabatJabatanAnDraft']) ? '' : "An. ".$datas['suratPejabatJabatanAnDraft'] ?> <br> <?= $datas['suratPejabatJabatan'] ?></p>
 					<?php
-					if (file_exists('../upload_file/qrcode/TTD_' . $datas['ticketTrackingId'] . '.png')) :
+					if (file_exists(WRITEPATH . 'uploads/qrcode/TTD_' . $datas['ticketTrackingId'] . '.png')) :
 					?>
-						<img width="100" src="../upload_file/qrcode/TTD_<?= $datas['ticketTrackingId'] ?>.png" alt="">
+						<img width="100" src="<?= WRITEPATH ?>uploads/qrcode/TTD_<?= $datas['ticketTrackingId'] ?>.png" alt="">
 					<?php endif; ?>
 					<p style="margin-top: 0px"><span class="bold"><?= $datas['suratPejabatNama'] ?> </span><br> NIP. <?= $datas['suratPejabatNIP'] ?></p>
 				</div>

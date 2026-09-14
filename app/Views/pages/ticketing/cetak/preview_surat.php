@@ -71,7 +71,7 @@
 	<div class="body" style="margin-top: 115px">
 		<table align="center">
 		    <tr align="center">
-		      <td rowspan="5"><img src="<?php echo base_url(); ?>assets/media/logos/logo-unmul.png" width="80" height="80"/><br /></td>
+		      <td rowspan="5"><img src="<?= FCPATH ?>assets/media/logos/logo-unmul.png" width="80" height="80"/><br /></td>
 		      <td class="bold uppercase text-center"><b>KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET DAN TEKNOLOGI</b></td>
 		      <td rowspan="5"></td>
 		    </tr>
@@ -82,7 +82,7 @@
 		  </table>
 		  <div class="borderbottom"></div>		
 		<div class="text-center mb-10 mt-10">
-			<p class="underline bold m-0 title"><?=$datas!=FALSE?$datas['suratJenis']:$this->session->judulSurat?></p>
+			<p class="underline bold m-0 title"><?=$datas!=FALSE?$datas['suratJenis']:(session('sess_surat')['suratJenis'] ?? '')?></p>
 			<span class="sub-title">NOMOR: <?=$datas!=FALSE?$datas['suratNomor']:''?></span>
 		</div>
 		<?php if ($identitas == 'MHS'){ ?>
@@ -118,13 +118,13 @@
 					</table>
 				</div>
 				<p class="capitalize">
-					<?=$datas!=FALSE?$datas['suratBody']:$this->session->isiSurat?>
+					<?=$datas!=FALSE?$datas['suratBody']:(session('sess_surat')['suratBody'] ?? '')?>
 				</p>
 				<?php if (!empty($datas['ticketValidated'])){ ?>
 					<div style="margin-left: 8cm">
 						<p>Samarinda, <?=empty($datas['ticketSuratCreated'])?'':datetoindo($datas['ticketSuratCreated'])?></p>
 						<p>a.n Rektor <br> <?=$datas['suratPejabatJabatan']?></p>
-						<img width="100" src="../upload_file/qrcode/BAZK-HGRY-001.png" alt="">
+						<img width="100" src="<?= WRITEPATH ?>uploads/qrcode/BAZK-HGRY-001.png" alt="">
 						<p><span class="bold"><?=$datas['suratPejabatNama']?> </span><br> NIP. <?=$datas['suratPejabatNIP']?></p>
 					</div>	
 				<?php }else { ?>
@@ -168,7 +168,7 @@
 					</table>
 				</div>
 				<p class="capitalize">
-					<?=$datas!=FALSE?$datas['suratBody']:$this->session->isiSurat?>
+					<?=$datas!=FALSE?$datas['suratBody']:(session('sess_surat')['suratBody'] ?? '')?>
 				</p>
 				<?php if (!empty($datas['ticketValidated'])): ?>
 					<div style="margin-left: 9cm">

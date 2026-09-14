@@ -1,31 +1,25 @@
 <?php
 
 /**
- * Helper password numerik EULT.
- * Porting dari CI3 application/helpers/generatepassword_helper.php.
+ * Helper password sementara EULT (reset password oleh admin).
  */
 
 if (! function_exists('eult_generate_password')) {
     /**
-     * Membuat password angka unik sepanjang $panjang (maks 10 digit).
+     * Membuat password sementara acak (CSPRNG) dari huruf besar/kecil dan
+     * angka, tanpa karakter yang mudah tertukar (0/O, 1/l/I).
+     * Panjang minimum 12 karakter agar tidak dapat ditebak/brute-force
+     * meskipun password hanya dipakai sampai pengguna menggantinya.
      */
-    function eult_generate_password(int $panjang = 6): string
+    function eult_generate_password(int $panjang = 12): string
     {
-        $password  = '';
-        $karakter  = '1234567890';
-        $maksPanjang = strlen($karakter);
+        $panjang  = max(12, $panjang);
+        $karakter = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        $maks     = strlen($karakter) - 1;
+        $password = '';
 
-        if ($panjang > $maksPanjang) {
-            $panjang = $maksPanjang;
-        }
-
-        $i = 0;
-        while ($i < $panjang) {
-            $char = substr($karakter, mt_rand(0, $maksPanjang - 1), 1);
-            if (! strstr($password, $char)) {
-                $password .= $char;
-                $i++;
-            }
+        for ($i = 0; $i < $panjang; $i++) {
+            $password .= $karakter[random_int(0, $maks)];
         }
 
         return $password;

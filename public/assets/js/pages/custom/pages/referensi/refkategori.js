@@ -85,7 +85,7 @@ var refKategori = function() {
 			$('#btn-add').on('click', e => {
 				e.preventDefault();
 				$.ajax({
-					type: 'POST',
+					type: 'GET',
 					url: e.currentTarget.href,
 					success: function(data) {
 						$('#create').removeClass('response-hide');
@@ -100,7 +100,7 @@ var refKategori = function() {
 			$('#btn-edit').on('click', e => {
 				e.preventDefault();
 				$.ajax({
-					type: 'POST',
+					type: 'GET',
 					url: e.currentTarget.href,
 					success: function(data) {
 						$('#create').removeClass('response-hide');
@@ -135,7 +135,7 @@ var refKategori = function() {
 		$('#btn-create').on('click', e=>{
 			e.preventDefault();
 			$.ajax({
-				type: 'POST',
+				type: 'GET',
 				url: e.currentTarget.href,
 				data: $(formShow).serialize(),
 				success: function(data) {

@@ -107,7 +107,10 @@ class Refsurat extends BaseController
             <tr><td>5.</td><td>Mahasiswa yang Bersangkutan</td></tr>
         </tbody></table>');
         $mpdf->WriteHTML('Hello World');
-        $mpdf->Output();
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'inline; filename="contoh_surat.pdf"')
+            ->setBody($mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN));
     }
 }

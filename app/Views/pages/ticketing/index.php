@@ -25,6 +25,7 @@
                         </div>
 
                         <form class="kt-form" action="<?= esc($show_url ?? '#') ?>" method="post" id="form_show">
+                            <?= csrf_field() ?>
                             <div class="kt-portlet__body p-4">
                                 <!-- Baris Tab Filter Cepat Status Tiket -->
                                 <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-3 border-bottom">

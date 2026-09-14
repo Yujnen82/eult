@@ -7,6 +7,7 @@
     <title>E-ULT | Unit Layanan Terpadu Universitas Mulawarman</title>
     <meta name="description" content="Portal Elektronik Unit Layanan Terpadu (E-ULT) Universitas Mulawarman - Layanan pengajuan tiket, pelacakan dokumen mandiri, dan verifikasi keabsahan surat resmi.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+    <meta name="eult-csrf-header" data-header="<?= esc(csrf_header(), 'attr') ?>" data-field="<?= esc(csrf_token(), 'attr') ?>" content="<?= esc(csrf_hash(), 'attr') ?>">
 
     <!--begin::Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700&display=swap">
@@ -2405,6 +2406,7 @@
     <!--begin::Global Theme Bundle(used by all pages) -->
     <script src="<?= base_url(); ?>assets/plugins/global/plugins.bundle.js" type="text/javascript"></script>
     <script src="<?= base_url(); ?>assets/js/scripts.bundle.js" type="text/javascript"></script>
+    <script src="<?= base_url(); ?>assets/js/pages/eult-csrf.js?v=20260914" type="text/javascript"></script>
     <!--end::Global Theme Bundle -->
 
     <!--begin::Page Scripts(used by this page) -->

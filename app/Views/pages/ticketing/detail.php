@@ -455,6 +455,7 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
                 <!-- Bagian Form Tanggapan & Tombol Aksi Terpadu -->
                 <div class="kt-portlet__foot p-4" style="border-top: 1px solid #ebedf2; background: #fafbfe;">
                     <form action="<?= esc($saveUrl) ?>" method="POST" enctype="multipart/form-data" id="form_chat">
+                        <?= csrf_field() ?>
                         <input type="hidden" name="repliesTicketId" value="<?= esc($trackingId) ?>">
                         <div class="form-group mb-3">
                             <label class="font-weight-bold text-dark mb-1" style="font-size: 12px;">Tulis Tanggapan Resmi</label>
@@ -480,10 +481,10 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
                                     <a href="<?= site_url('ticketing/assign/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Disposisi Tiket Layanan" title="Disposisikan tiket ke unit kerja">
                                         <i class="la la-share text-primary mr-1"></i> Disposisikan
                                     </a>
-                                    <a href="<?= site_url('ticketing/createSurat/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Formulir Draf Surat Resmi" title="Buat draf surat resmi">
+                                    <a href="<?= site_url('ticketing/create_surat/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Formulir Draf Surat Resmi" title="Buat draf surat resmi">
                                         <i class="la la-file-text text-info mr-1"></i> Draf Surat
                                     </a>
-                                    <a href="<?= site_url('ticketing/last_validated/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Terbitkan QR Dokumen Keabsahan" title="Terbitkan QR Code keabsahan berkas">
+                                    <a href="<?= site_url('ticketing/validasi/' . $encKey) ?>" class="btn btn-secondary btn-sm font-weight-bold btn-ajax-modal" data-modal-title="Terbitkan QR Dokumen Keabsahan" title="Terbitkan QR Code keabsahan berkas">
                                         <i class="la la-qrcode text-dark mr-1"></i> Terbitkan QR
                                     </a>
                                 <?php endif; ?>
@@ -597,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             $.ajax({
                 url: url,
-                type: 'GET',
+                type: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 },

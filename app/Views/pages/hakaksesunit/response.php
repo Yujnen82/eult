@@ -1,5 +1,6 @@
 <!--begin::Form-->
 <form action="<?= esc($save_url ?? '#') ?>" method="post" id="form_custom">
+    <?= csrf_field() ?>
     <input type="hidden" name="sgroupNama" value="<?= esc(!empty($sgroupNama) ? $sgroupNama : '') ?>">
     <div class="kt-portlet kt-portlet--mobile mb-0">
         <div class="kt-portlet__head flex-wrap py-3" style="min-height: 60px;">

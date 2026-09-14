@@ -187,6 +187,52 @@ final class AksesBerkasTest extends CIUnitTestCase
     }
 
     /**
+     * Otorisasi per tiket pada aksi staf: staf di luar unit tiket tidak boleh
+     * membuka detail maupun mengubah status tiket meski memegang kunci sah.
+     */
+    public function testAksiTiketMenolakStafTanpaHakAtasTiket(): void
+    {
+        $grup = $this->grupTanpaHakTiket();
+
+        if ($grup === '') {
+            $this->markTestSkipped('Tidak ada grup staf uji pada data referensi.');
+        }
+
+        $sesi = ['logged_in' => $this->sesi($grup)];
+
+        $detail = $this->withSession($sesi)->get('ticketing/detail/' . $this->kunciA);
+        $detail->assertStatus(403);
+
+        $terima = $this->withSession($sesi)
+            ->withHeaders(['X-Requested-With' => 'XMLHttpRequest'])
+            ->withBodyFormat('form')
+            ->post('ticketing/terima/' . $this->kunciA, [csrf_token() => csrf_hash()]);
+        $terima->assertStatus(403);
+
+        $baris = $this->koneksi->table('d_ticketing')
+            ->select('ticketIsVerified')
+            ->where('ticketTrackingId', self::TIKET_A)
+            ->get()->getRowArray();
+        $this->assertNotSame('1', (string) ($baris['ticketIsVerified'] ?? ''), 'Tiket tidak boleh terverifikasi oleh staf tanpa hak.');
+    }
+
+    public function testBalasanPublikMenolakNomorTiketMentahTanpaKunci(): void
+    {
+        $hasil = $this->withBodyFormat('form')->post('cektiket/save_replies', [
+            csrf_token()      => csrf_hash(),
+            'repliesTicketId' => self::TIKET_A,
+            'repliesMessage'  => 'coba sisipkan balasan',
+        ]);
+
+        $hasil->assertStatus(403);
+        $this->assertSame(
+            0,
+            $this->koneksi->table('d_replies')->where(['repliesTicketId' => self::TIKET_A, 'repliesMessage' => 'coba sisipkan balasan'])->countAllResults(),
+            'Balasan tanpa kunci terenkripsi tidak boleh tersimpan.'
+        );
+    }
+
+    /**
      * @return array<string, string>
      */
     private function sesi(string $grup): array

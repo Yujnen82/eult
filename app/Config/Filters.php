@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Filters\AuthFilter;
+use App\Filters\CsrfTokenHeader;
 use App\Filters\EnvironmentAwareToolbar;
 use App\Filters\GuestFilter;
 use App\Filters\ThrottleFilter;
@@ -47,6 +48,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'throttle'      => ThrottleFilter::class,
+        'csrftoken'     => CsrfTokenHeader::class,
     ];
 
     /**
@@ -92,6 +94,8 @@ class Filters extends BaseFilters
         'after' => [
             // 'honeypot',
             'secureheaders',
+            // Token CSRF terbaru untuk request AJAX (dibaca eult-csrf.js).
+            'csrftoken',
         ],
     ];
 

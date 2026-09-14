@@ -38,6 +38,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= esc($show_url ?? '#') ?>" method="post" id="form_show">
+                    <?= csrf_field() ?>
                     <div class="kt-portlet__body">
                         <?php if (empty($s_user)): ?>
                             <div class="text-center py-4 text-muted">

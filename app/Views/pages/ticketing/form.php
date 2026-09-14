@@ -14,6 +14,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= $save_url ?>" method="post" id="form_ticketing" enctype="multipart/form-data">
+                    <?= csrf_field() ?>
 
                     <div class="kt-portlet__body">
                         <div class="form-group row">

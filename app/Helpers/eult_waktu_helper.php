@@ -118,3 +118,13 @@ if (! function_exists('eult_waktu_lalu')) {
         return $waktuLalu . ' ago';
     }
 }
+
+if (! function_exists('findTimeAgo')) {
+    /**
+     * Alias findTimeAgo untuk kompatibilitas view lama/CI3 (detail.php).
+     */
+    function findTimeAgo(string $lalu, string $sekarang = 'now'): string
+    {
+        return eult_waktu_lalu($lalu, $sekarang);
+    }
+}

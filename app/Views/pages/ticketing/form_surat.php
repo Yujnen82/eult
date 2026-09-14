@@ -13,9 +13,10 @@
                 </div>
 
                 <!--begin::Form-->
-                <form class="kt-form" action="<?= $save_url ?>" method="post" id="form_surat">
+                <form class="kt-form" action="<?= esc($save_url) ?>" method="post" id="form_surat">
                     <div class="kt-portlet__body">
-                        <input type="hidden" name="suratTrackingId" id="suratTrackingId" value="<?= $this->uri->segment(3) ?>">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="suratTrackingId" id="suratTrackingId" value="<?= esc($kunci ?? '', 'attr') ?>">
                         <input type="hidden" name="suratIdOld" value="<?= $datas != FALSE ? service('enkripsi')->encode($datas['suratId']) : ''; ?>">
                         <div class="form-group">
                             <label>Nomor Surat <strong style="color:red">*</strong></label>
@@ -34,9 +35,7 @@
                             <input class="form-control" type="text" name="suratPerihal" value="<?= $datas != FALSE ? $datas['suratPerihal'] : (empty($surat) ? '' : $surat['tsuratPerihal']) ?>">
                         </div>
                         <?php               
-                        if($surat!=false): 
-                        if(($surat['tsuratForm']<>'cetak_1') or ($surat['tsuratForm']<>'cetak_2')){
-                            ?>
+                        if ($surat != false): ?>
                         <div class="form-group">
                             <label>Lampiran</label>
                             <input class="form-control" type="text" name="suratLampiran" value="<?= $datas != FALSE ? $datas['suratLampiran'] : (empty($surat) ? '' : $surat['tsuratLampiran']) ?>">
@@ -50,7 +49,7 @@
                             </div>
                             <span class="form-text text-muted">* Harap diperhatikan tulisan dalam kurung cetak tebal.</span>
                         </div>
-                        <?php } endif;?>
+                        <?php endif; ?>
                         <div class="form-group">
                             <label>Isi Surat <strong style="color:red">*</strong></label>
                             <div class="kt-tinymce">

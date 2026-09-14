@@ -21,6 +21,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="eult-csrf-header" data-header="<?= esc(csrf_header(), 'attr') ?>" data-field="<?= esc(csrf_token(), 'attr') ?>" content="<?= esc(csrf_hash(), 'attr') ?>">
 	<!--begin::Web font -->
 	<script src="<?= base_url(); ?>assets/vendor/webfont/1.6.16/webfont.js"></script>
 	<script {csp-script-nonce}>
@@ -170,6 +171,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	<!--begin::Base Scripts -->
 	<script src="<?= base_url(); ?>assets/plugins/global/plugins.bundle.js" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/js/scripts.bundle.js" type="text/javascript"></script>
+	<script src="<?= base_url(); ?>assets/js/pages/eult-csrf.js?v=<?= date('YmdHis') ?>" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/plugins/custom/tinymce/tinymce.bundle.js" type="text/javascript"></script>
 	<!--begin::Page Vendors -->
 	<script src="<?= base_url(); ?>assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" type="text/javascript"></script>

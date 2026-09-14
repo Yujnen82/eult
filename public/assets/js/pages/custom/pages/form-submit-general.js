@@ -17,7 +17,8 @@ var FormGeneral = function() {
                 e.value && 
                 $.ajax(
                 {
-                    url:$(idLink).attr('href'),
+                    type: 'POST',
+                        url:$(idLink).attr('href'),
                     success:function(data) 
                     {
                         var res = (typeof data === 'string' ? JSON.parse(data) : data);

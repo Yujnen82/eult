@@ -31,10 +31,16 @@ final class AlurFondasiTest extends CIUnitTestCase
 
     public function testLoginCaptchaSalahDitolak(): void
     {
+        // Filter CSRF global aktif: POST tanpa token ditolak SecurityException
+        // sebelum controller; sertakan token seperti form login sungguhan.
+        \Config\Services::injectMock('request', $this->setupRequest('POST', 'otentifikasi'));
+        \Config\Services::resetSingle('security');
+
         $hasil = $this->post('/otentifikasi', [
-            'username' => 'tidakada',
-            'password' => 'salah',
-            'captcha'  => 'XXXX-SALAH',
+            'username'   => 'tidakada',
+            'password'   => 'salah',
+            'captcha'    => 'XXXX-SALAH',
+            csrf_token() => csrf_hash(),
         ]);
 
         $hasil->assertOK();

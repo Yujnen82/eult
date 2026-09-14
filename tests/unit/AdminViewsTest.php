@@ -917,6 +917,64 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringContainsString('Hapus', $htmlIndex);
         $this->assertStringContainsString('Legalisir Ijazah', $htmlIndex);
         $this->assertStringContainsString('Fotokopi Ijazah', $htmlIndex);
+        $this->assertStringContainsString('kt-portlet__head flex-wrap', $htmlIndex);
+        $this->assertStringContainsString('kt-portlet__head-icon', $htmlIndex);
+        $this->assertMatchesRegularExpression('/#ref_table\s*\{\s*min-width:\s*720px;\s*\}/', $htmlIndex);
+        $this->assertMatchesRegularExpression('/#ref_table col\.refsyarat-col-aksi\s*\{\s*width:\s*190px;\s*\}/', $htmlIndex);
+        $this->assertStringContainsString('<colgroup>', $htmlIndex);
+
+        $dom = new \DOMDocument();
+        $previousLibxmlState = libxml_use_internal_errors(true);
+        $dom->loadHTML($htmlIndex);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousLibxmlState);
+        $xpath = new \DOMXPath($dom);
+        $table = $xpath->query('//*[@id="ref_table"]')->item(0);
+
+        $this->assertInstanceOf(\DOMElement::class, $table);
+        $this->assertSame(1, $xpath->query('ancestor::div[contains(concat(" ", normalize-space(@class), " "), " table-responsive ")]', $table)->length);
+
+        $actionHeader = $xpath->query('.//thead//th[normalize-space(.)="Aksi"]', $table)->item(0);
+        $this->assertInstanceOf(\DOMElement::class, $actionHeader);
+        $this->assertSame('1', $actionHeader->getAttribute('data-priority'));
+        $this->assertMatchesRegularExpression('/(?:^|\s)all(?:\s|$)/', $actionHeader->getAttribute('class'));
+
+        $actionCells = $xpath->query('.//tbody/tr/td[contains(concat(" ", normalize-space(@class), " "), " refsyarat-actions ")]', $table);
+        $this->assertSame(2, $actionCells->length);
+
+        foreach ($actionCells as $actionCell) {
+            if (!$actionCell instanceof \DOMElement) {
+                $this->fail('Sel aksi harus berupa elemen DOM.');
+            }
+
+            $this->assertMatchesRegularExpression('/(?:^|\s)text-nowrap(?:\s|$)/', $actionCell->getAttribute('class'));
+            $this->assertSame(0, $xpath->query('.//*[contains(concat(" ", normalize-space(@class), " "), " btn-group ")]', $actionCell)->length);
+
+            $actionButtons = $xpath->query('./a[contains(concat(" ", normalize-space(@class), " "), " btn ")]', $actionCell);
+            $this->assertSame(2, $actionButtons->length);
+            $editButton = $actionButtons->item(0);
+            $deleteButton = $actionButtons->item(1);
+
+            if (!$editButton instanceof \DOMElement || !$deleteButton instanceof \DOMElement) {
+                $this->fail('Tombol Ubah dan Hapus harus berupa elemen DOM.');
+            }
+
+            $this->assertSame('Ubah', trim($editButton->textContent));
+            $this->assertSame('Hapus', trim($deleteButton->textContent));
+            $this->assertMatchesRegularExpression('/(?:^|\s)ml-1(?:\s|$)/', $deleteButton->getAttribute('class'));
+
+            $actionIcons = $xpath->query('./a/i', $actionCell);
+            $this->assertSame(2, $actionIcons->length);
+            $editIcon = $actionIcons->item(0);
+            $deleteIcon = $actionIcons->item(1);
+
+            if (!$editIcon instanceof \DOMElement || !$deleteIcon instanceof \DOMElement) {
+                $this->fail('Ikon tombol aksi harus berupa elemen DOM.');
+            }
+
+            $this->assertSame('true', $editIcon->getAttribute('aria-hidden'));
+            $this->assertSame('true', $deleteIcon->getAttribute('aria-hidden'));
+        }
 
         $renderer->resetData();
         $htmlEmpty = $renderer->setData([
@@ -952,6 +1010,16 @@ class AdminViewsTest extends CIUnitTestCase
         $this->assertStringNotContainsString('placeholder="berkasKeterangan"', $htmlForm);
         $this->assertStringContainsString('Legalisir Ijazah', $htmlForm);
         $this->assertStringContainsString('required', $htmlForm);
+        $this->assertStringContainsString('kt-portlet__head flex-wrap', $htmlForm);
+        $this->assertStringContainsString('col-xl-8 col-lg-10', $htmlForm);
+        $this->assertStringContainsString('col-md-5', $htmlForm);
+        $this->assertStringContainsString('col-md-7', $htmlForm);
+        $this->assertStringContainsString('for="berkasidLayanan"', $htmlForm);
+        $this->assertStringContainsString('id="berkasidLayanan"', $htmlForm);
+        $this->assertStringContainsString('for="berkasNama"', $htmlForm);
+        $this->assertStringContainsString('id="berkasNama"', $htmlForm);
+        $this->assertStringContainsString('for="berkasKeterangan"', $htmlForm);
+        $this->assertStringContainsString('id="berkasKeterangan"', $htmlForm);
     }
 }
 

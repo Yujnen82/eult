@@ -73,17 +73,69 @@ var EultDataTables = (function () {
                 }
             }
 
+            // 4b. Deteksi Fitur Row Grouping (Group Header Rows)
+            var isRowGroup = $table.is('#ref_table') || $table.data('row-group') === true || $table.hasClass('table-row-group');
+            var groupColumn = 0;
+            var drawCallbackHandler = null;
+
+            if (isRowGroup) {
+                // Sembunyikan kolom grup dari baris data individual karena sudah diwakili oleh header grup
+                defs.push({
+                    targets: groupColumn,
+                    visible: false
+                });
+
+                drawCallbackHandler = function (settings) {
+                    var api = this.api();
+                    var rows = api.rows({ page: 'current' }).nodes();
+                    var last = null;
+                    var groupCounts = {};
+
+                    // Hitung jumlah item per grup pada halaman aktif
+                    api.column(groupColumn, { page: 'current' }).data().each(function (group) {
+                        var text = $('<div>').html(group).text().trim();
+                        groupCounts[text] = (groupCounts[text] || 0) + 1;
+                    });
+
+                    var visibleColCount = api.columns(':visible').count();
+
+                    api.column(groupColumn, { page: 'current' }).data().each(function (group, i) {
+                        var text = $('<div>').html(group).text().trim();
+                        if (last !== text) {
+                            var count = groupCounts[text] || 1;
+                            $(rows).eq(i).before(
+                                '<tr class="refsyarat-group-row" style="background-color: #f7f8fa; border-top: 2px solid #ebedf2; border-bottom: 1px solid #ebedf2;">' +
+                                    '<td colspan="' + visibleColCount + '" class="py-2 px-3" style="border-left: 4px solid #5d78ff;">' +
+                                        '<div class="d-flex align-items-center justify-content-between">' +
+                                            '<span class="font-weight-bold text-dark d-flex align-items-center" style="font-size: 12.5px; letter-spacing: 0.2px;">' +
+                                                '<i class="flaticon2-layers-1 text-primary mr-2" style="font-size: 14px;"></i> ' +
+                                                text +
+                                            '</span>' +
+                                            '<span class="badge badge-secondary font-weight-bold text-muted" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: #ffffff; border: 1px solid #e2e5ec;">' +
+                                                count + ' Dokumen Persyaratan' +
+                                            '</span>' +
+                                        '</div>' +
+                                    '</td>' +
+                                '</tr>'
+                            );
+                            last = text;
+                        }
+                    });
+                };
+            }
+
             // 5. Inisialisasi DataTable dengan opsi resmi Metronic v6
             try {
                 $table.DataTable({
-                    responsive: true,
-                    pageLength: 10,
+                    responsive: isRowGroup ? false : true,
+                    pageLength: isRowGroup ? 25 : 10,
                     lengthMenu: [
                         [10, 25, 50, 100, -1],
                         [10, 25, 50, 100, 'Semua']
                     ],
-                    order: [], // Pertahankan urutan dari controller/database
+                    order: isRowGroup ? [[groupColumn, 'asc']] : [],
                     columnDefs: defs,
+                    drawCallback: drawCallbackHandler,
                     language: {
                         emptyTable: 'Belum ada data yang tersedia di tabel ini',
                         zeroRecords: 'Tidak ditemukan data yang sesuai kriteria pencarian',
@@ -94,7 +146,7 @@ var EultDataTables = (function () {
                         loadingRecords: 'Memuat data...',
                         processing: 'Sedang memproses...',
                         search: 'Cari Data:',
-                        searchPlaceholder: 'Ketik kata kunci...',
+                        searchPlaceholder: isRowGroup ? 'Cari layanan atau berkas...' : 'Ketik kata kunci...',
                         paginate: {
                             first: '<i class="la la-angle-double-left"></i>',
                             last: '<i class="la la-angle-double-right"></i>',

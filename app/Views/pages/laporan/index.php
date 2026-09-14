@@ -1,6 +1,6 @@
 <?= $this->include('layouts/subheader') ?>
 
-<style>
+<style {csp-style-nonce}>
     html {
         scroll-behavior: smooth;
     }

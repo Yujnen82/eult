@@ -25,8 +25,15 @@ if (! function_exists('eult_generate_kode')) {
 if (! function_exists('eult_auto_increment')) {
     /**
      * Membuat ID arsip berikutnya (porting auto_increment CI3).
+     *
+     * @param array<string, mixed>|string $kondisi Kondisi WHERE. Caller yang menerima input
+     *                                              dari request publik (mis. Login::savetiket())
+     *                                              WAJIB memakai bentuk array (array binding aman).
+     *                                              Bentuk string HANYA untuk caller internal yang
+     *                                              tidak menerima input publik secara langsung
+     *                                              (lihat ModelMaster::getByLastId()).
      */
-    function eult_auto_increment(string $tabel, string $kolom, string $nip, string $kondisi): string
+    function eult_auto_increment(string $tabel, string $kolom, string $nip, array|string $kondisi): string
     {
         $model = new \App\Models\ModelMaster();
 

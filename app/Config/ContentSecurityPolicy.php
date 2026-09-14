@@ -57,20 +57,41 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * Lists allowed scripts' URLs.
      *
+     * Opsi B (nonce first-party): seluruh `<script>` inline milik
+     * aplikasi memakai placeholder `{csp-script-nonce}` (dikunci oleh
+     * `CspFirstPartyNoncePreservationTest`), sehingga tetap diizinkan
+     * meski header memuat `'nonce-…'` (mis. saat Debug Toolbar aktif).
+     * `unsafe-inline` dipertahankan sebagai fallback untuk respons
+     * tanpa placeholder. Seluruh `<script src="...">` first-party
+     * adalah `base_url()`-prefixed (same-origin, tercover `self`).
+     *
      * @var list<string>|string
      */
-    public $scriptSrc = 'self';
+    public $scriptSrc = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for JavaScript <script> elements.
      *
+     * Directive TERPISAH dari `script-src` (tidak ada fallback otomatis
+     * base ke elem) — disamakan agar `<script>` inline ber-nonce maupun
+     * `src=` same-origin tetap diizinkan.
+     *
      * @var list<string>|string
      */
-    public array|string $scriptSrcElem = 'self';
+    public array|string $scriptSrcElem = ['self', 'unsafe-inline'];
 
     /**
      * Specifies valid sources for JavaScript inline event
      * handlers and JavaScript URLs.
+     *
+     * Audit `login.php`/`detail_user.php`: TIDAK ada atribut
+     * event-handler inline (`onclick=`, `onerror=`, dll) — seluruh
+     * binding event dilakukan via jQuery `.on()` di dalam blok
+     * `<script>` (tercover `scriptSrc`/`scriptSrcElem` di atas).
+     * Dipertahankan default `self` (bukan `unsafe-inline`) karena tidak
+     * ada penggunaan yang membutuhkannya — directive ini murni tidak
+     * relevan untuk halaman ini, mempertahankan `self` tidak
+     * memblokir apa pun yang benar-benar dipakai.
      *
      * @var list<string>|string
      */
@@ -79,31 +100,57 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * Lists allowed stylesheets' URLs.
      *
+     * Opsi B: seluruh blok `<style>` inline memakai placeholder
+     * `{csp-style-nonce}` (dikunci `CspFirstPartyNoncePreservationTest`);
+     * `unsafe-inline` sebagai fallback. Satu `<link>` eksternal
+     * (`https://fonts.googleapis.com`, Google Fonts CSS) adalah
+     * satu-satunya domain CSS eksternal halaman publik; sisanya
+     * `base_url()`-prefixed (tercover `self`).
+     *
      * @var list<string>|string
      */
-    public $styleSrc = 'self';
+    public $styleSrc = ['self', 'unsafe-inline', 'https://fonts.googleapis.com'];
 
     /**
      * Specifies valid sources for stylesheets <link> elements.
      *
-     * @var list<string>|string
-     */
-    public array|string $styleSrcElem = 'self';
-
-    /**
-     * Specifies valid sources for stylesheets inline
-     * style attributes and `<style>` elements.
+     * Directive HTTP header TERPISAH dari `styleSrc` (sama seperti
+     * `scriptSrcElem` di atas) — disamakan agar `<link rel="stylesheet"
+     * href="https://fonts.googleapis.com/...">` (elemen `<link>`,
+     * relevan langsung untuk directive -elem ini) tidak diblokir.
      *
      * @var list<string>|string
      */
-    public array|string $styleSrcAttr = 'self';
+    public array|string $styleSrcElem = ['self', 'unsafe-inline', 'https://fonts.googleapis.com'];
+
+    /**
+     * Specifies valid sources for inline style attributes
+     * (`style="…"` pada elemen HTML).
+     *
+     * Koreksi: elemen `<style>` diatur `style-src-elem`, BUKAN directive
+     * ini. `unsafe-inline` dipertahankan karena atribut `style="…"`
+     * masih dipakai luas di view (mis. `login.php`), dan CI4 TIDAK
+     * menambahkan nonce ke directive ini (nonce style hanya ke
+     * `style-src`/`style-src-elem`), sehingga `unsafe-inline` di sini
+     * tetap dihormati browser.
+     *
+     * @var list<string>|string
+     */
+    public array|string $styleSrcAttr = ['self', 'unsafe-inline'];
 
     /**
      * Defines the origins from which images can be loaded.
      *
+     * Audit: satu `background-image: url("data:image/svg+xml,...")`
+     * (ikon search SVG inline pada Select2 dropdown, `login.php:951`)
+     * di dalam blok `<style>` — WAJIB `data:` di imageSrc, jika tidak
+     * ikon tersebut diblokir CSP (regresi visual, bukan error fatal).
+     * Seluruh `<img src="...">` lain adalah `base_url()`-prefixed
+     * (logo, favicon — tercover `self`).
+     *
      * @var list<string>|string
      */
-    public $imageSrc = 'self';
+    public $imageSrc = ['self', 'data:'];
 
     /**
      * Restricts the URLs that can appear in a page's `<base>` element.
@@ -132,9 +179,24 @@ class ContentSecurityPolicy extends BaseConfig
     /**
      * Specifies the origins that can serve web fonts.
      *
+     * Diverifikasi via fetch langsung terhadap CSS
+     * `https://fonts.googleapis.com/css?family=Poppins...` (task 21.1):
+     * response benar-benar mereferensikan file font (`.ttf`, bukan
+     * `.woff2`) dari domain `https://fonts.gstatic.com` — DUA domain
+     * berbeda (googleapis untuk CSS, gstatic untuk file font itu
+     * sendiri) WAJIB diwhitelist terpisah. Tanpa ini, directive
+     * `font-src` yang sebelumnya `null` (tidak muncul di header) akan
+     * fallback ke `default-src` (efektif `self` karena CI4 default-kan
+     * `defaultSrc` kosong menjadi `'self'`), yang akan memblokir
+     * pemuatan file font tersebut meski CSS-nya sendiri sudah
+     * diizinkan via `styleSrcElem`. Opsi B aset admin: `data:`
+     * ditambahkan karena icon font `fcicons` FullCalendar di-embed via
+     * data: URI di `fullcalendar.bundle.css` first-party (tanpanya,
+     * font tersebut diblokir `font-src`).
+     *
      * @var list<string>|string
      */
-    public $fontSrc;
+    public $fontSrc = ['self', 'https://fonts.gstatic.com', 'data:'];
 
     /**
      * Lists valid endpoints for submission from `<form>` tags.

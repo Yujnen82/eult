@@ -19,6 +19,7 @@ $outputUrl    = $output_url ?? false;
 $saveUrl      = $save_url ?? site_url('cektiket/save_replies/');
 $closeUrl     = $close_url ?? '#';
 $loadAttach   = $load_attach ?? site_url('cektiket/loadattach');
+$ratingUrl    = $rating_url ?? site_url('cektiket/rating');
 $cetakTerima  = $cetakterima ?? '#';
 $inisial      = strtoupper(substr(trim($namaPemohon) !== '' ? $namaPemohon : 'P', 0, 1));
 
@@ -71,6 +72,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
     <title>Lacak Tiket <?= esc($trackingId) ?> | E-ULT Universitas Mulawarman</title>
     <meta name="description" content="Pelacakan tiket layanan Unit Layanan Terpadu Universitas Mulawarman — status berkas, riwayat disposisi, dan percakapan dengan petugas.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+    <?= csrf_meta() ?>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700|Roboto:300,400,500,600,700&display=swap">
     <link href="<?= base_url(); ?>assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
@@ -83,7 +85,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
     <link href="<?= base_url(); ?>assets/css/theme-rating.css" media="all" rel="stylesheet" type="text/css" />
     <link rel="shortcut icon" href="<?= base_url(); ?>assets/media/logos/favicon_unmul.ico" />
 
-    <style>
+    <style {csp-style-nonce}>
         :root {
             --eult-brand: #5d78ff;
             --eult-ink: #1e1e2d;
@@ -876,13 +878,14 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
                     </div>
                     <div class="eult-portlet-foot">
                         <form class="eult-composer" action="<?= esc($saveUrl) ?>" method="POST" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
                             <input type="hidden" name="repliesTicketId" value="<?= esc($trackingId, 'attr') ?>">
                             <label class="sr-only" for="repliesMessage">Pesan balasan</label>
                             <textarea id="repliesMessage" name="repliesMessage" placeholder="Tulis pesan untuk petugas ULT..." required></textarea>
                             <label class="eult-filepick" id="eult-filepick">
-                                <input type="file" name="chatFile" id="customFile" accept=".pdf,.jpg,.png,application/pdf,image/jpeg,image/png">
+                                <input type="file" name="chatFile" id="customFile" accept=".pdf,application/pdf">
                                 <i class="flaticon-attachment text-primary"></i>
-                                <span class="eult-filepick__name" id="eult-file-label">Lampirkan PDF, JPG, atau PNG (opsional, maks. 15 MB)</span>
+                                <span class="eult-filepick__name" id="eult-file-label">Lampirkan PDF (opsional, maks. 15 MB)</span>
                             </label>
                             <div class="eult-composer-bar">
                                 <button type="submit" class="btn btn-brand btn-sm btn-bold">Kirim Pesan</button>
@@ -915,7 +918,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
 
     <div class="eult-toast" id="eult-toast" role="status" aria-live="polite"></div>
 
-    <script>
+    <script {csp-script-nonce}>
         var KTAppOptions = {
             "colors": {
                 "state": {
@@ -939,7 +942,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
     <script src="<?= base_url(); ?>assets/js/scripts.bundle.js" type="text/javascript"></script>
     <script src="<?= base_url(); ?>assets/js/star-rating.min.js" type="text/javascript"></script>
     <script src="<?= base_url(); ?>assets/js/themes-rating.js"></script>
-    <script type="text/javascript">
+    <script type="text/javascript" {csp-script-nonce}>
         const KTTicketing = function() {
             const tampilkanToast = (teks) => {
                 const el = document.getElementById('eult-toast');
@@ -959,15 +962,25 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
 
             const initHandleShow = () => {
                 $('.kv-uni-star').on('change', function() {
-                    const ticketId = $('#ticketId').text().trim();
                     $.ajax({
                         type: 'POST',
-                        url: '<?= site_url('cektiket/rating'); ?>',
-                        data: {
-                            rating: $(this).val(),
-                            nomorTiket: ticketId
+                        url: '<?= esc($ratingUrl, 'attr') ?>',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="<?= esc(csrf_header(), 'attr') ?>"]').attr('content')
                         },
-                        success: () => {
+                        data: {
+                            rating: $(this).val()
+                        },
+                        success: (response, status, xhr) => {
+                            // Token CSRF diregenerasi server setiap submit sukses
+                            // ($regenerate = true) — perbarui meta tag agar
+                            // percobaan submit berikutnya pada halaman yang
+                            // sama (tanpa reload) tidak memakai token basi.
+                            const tokenBaru = xhr.getResponseHeader('X-CSRF-TOKEN');
+                            if (tokenBaru) {
+                                $('meta[name="<?= esc(csrf_header(), 'attr') ?>"]').attr('content', tokenBaru);
+                            }
+
                             if (typeof swal !== 'undefined' && swal.fire) {
                                 swal.fire({
                                     title: "Indeks Kepuasan Masyarakat",
@@ -1031,7 +1044,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
                         label.textContent = this.files[0].name;
                         wrap.classList.add('has-file');
                     } else {
-                        label.textContent = 'Lampirkan PDF, JPG, atau PNG (opsional, maks. 15 MB)';
+                        label.textContent = 'Lampirkan PDF (opsional, maks. 15 MB)';
                         wrap.classList.remove('has-file');
                     }
                 });

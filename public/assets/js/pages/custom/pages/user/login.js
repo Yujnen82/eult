@@ -15,10 +15,10 @@ var KTLoginGeneral = function () {
             }
         });
     }
-    // Function untuk memperbarui CAPTCHA
-    var refreshCaptcha = function (captchaCode) {
-        if (captchaCode) {
-            $('.captcha-display').text(captchaCode);
+    // Function untuk memperbarui CAPTCHA (kini menerima URL gambar, bukan teks plaintext)
+    var refreshCaptcha = function (captchaImageUrl) {
+        if (captchaImageUrl) {
+            $('.captcha-display').attr('src', captchaImageUrl);
             $('input[name="captcha"]').val(''); // Reset nilai input captcha
         }
     }
@@ -489,8 +489,8 @@ var KTLoginGeneral = function () {
                     type: 'GET',
                     dataType: 'json',
                     success: function (response) {
-                        if (response && response.captcha) {
-                            $('.captcha-display').text(response.captcha);
+                        if (response && response.captcha_image_url) {
+                            $('.captcha-display').attr('src', response.captcha_image_url);
                             $('input[name="captcha"]').val('');
                         } else {
                             console.error('Invalid response format');

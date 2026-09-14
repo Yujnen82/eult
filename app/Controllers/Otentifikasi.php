@@ -34,20 +34,24 @@ class Otentifikasi extends BaseController
                 'ip'   => $this->request->getIPAddress(),
             ]);
 
+            eult_captcha_generate(4);
+
             return $this->response->setJSON([
                 'status'      => 'danger',
                 'message'     => 'Username atau Password salah. Silakan coba lagi.',
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
         if (! eult_captcha_check((string) $this->request->getPost('captcha'))) {
             log_message('debug', 'Otentifikasi captcha salah untuk {user}', ['user' => (string) $this->request->getPost('username')]);
 
+            eult_captcha_generate(4);
+
             return $this->response->setJSON([
                 'status'      => 'danger',
                 'message'     => 'CAPTCHA tidak valid. Silakan coba lagi.',
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
@@ -57,10 +61,12 @@ class Otentifikasi extends BaseController
                 'ip'   => $this->request->getIPAddress(),
             ]);
 
+            eult_captcha_generate(4);
+
             return $this->response->setJSON([
                 'status'      => 'danger',
                 'message'     => 'Username atau Password salah. Silakan coba lagi.',
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
@@ -76,6 +82,15 @@ class Otentifikasi extends BaseController
             'message'      => 'You have successfully logged in.',
             'redirect_url' => base_url() . 'home',
         ]);
+    }
+
+    /**
+     * URL endpoint gambar captcha dengan nonce cache-busting — nilai
+     * captcha session TIDAK PERNAH dikirim plaintext ke klien.
+     */
+    private function urlGambarCaptcha(): string
+    {
+        return base_url('login/captcha_image') . '?t=' . time();
     }
 
     /**

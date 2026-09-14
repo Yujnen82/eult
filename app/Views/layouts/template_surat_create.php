@@ -10,7 +10,7 @@
     <!--[if !mso]><!-->
     <!--<![endif]-->
 
-    <style>
+    <style {csp-style-nonce}>
         .ReadMsgBody {
             width: 100%;
             background-color: #EAECED;
@@ -138,12 +138,12 @@
 
         }
     </style>
-    <style>
+    <style {csp-style-nonce}>
         body {
             background-color: #EAECED
         }
     </style>
-    <style>
+    <style {csp-style-nonce}>
         @media only screen and (max-width: 600px) {
 
             img[class="header-image"] {
@@ -156,7 +156,7 @@
 
         }
     </style>
-    <style>
+    <style {csp-style-nonce}>
         @media only screen and (max-width: 600px) {
 
             img[class="logo"] {
@@ -171,7 +171,7 @@
     </style>
     <title>ULT - Universitas Mulawarman: Nomor Tiket <?= $datas != false ? $datas['ticketTrackingId'] : '' ?></title>
     <meta name="robots" content="noindex, nofollow">
-    <style type="text/css"></style>
+    <style type="text/css" {csp-style-nonce}></style>
 </head>
 
 <body style="padding:0; margin:0; width:100% !important; background-color:#EAECED" bgcolor="#EAECED">

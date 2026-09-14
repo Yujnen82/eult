@@ -10,14 +10,17 @@
             <div id="response"></div>
             <!--begin::Portlet-->
             <div class="kt-portlet">
-                <div class="kt-portlet__head">
+                <div class="kt-portlet__head flex-wrap">
                     <div class="kt-portlet__head-label">
+                        <span class="kt-portlet__head-icon">
+                            <i class="flaticon2-file-1 text-brand"></i>
+                        </span>
                         <h3 class="kt-portlet__head-title">
                             <?= strtoupper(esc($page_judul ?? 'Master Persyaratan Layanan')) ?>
                         </h3>
                     </div>
                     <div class="kt-portlet__head-toolbar">
-                        <div class="kt-portlet__head-actions">
+                        <div class="kt-portlet__head-actions py-2">
                             <a href="<?= $create_url ?? '#' ?>" class="btn btn-brand btn-elevate btn-icon-sm" id="btn-create">
                                 <i class="flaticon2-plus"></i>
                                 Tambah Data
@@ -32,12 +35,18 @@
                         <div class="kt-section__content">
                             <div class="table-responsive">
                                 <table class="table table-hover table-striped mb-0" id="ref_table">
+                                    <colgroup>
+                                        <col class="refsyarat-col-layanan">
+                                        <col class="refsyarat-col-nama">
+                                        <col class="refsyarat-col-keterangan">
+                                        <col class="refsyarat-col-aksi">
+                                    </colgroup>
                                     <thead class="thead-light">
                                         <tr>
-                                            <th class="text-uppercase text-muted font-weight-bold" style="width: 22%; font-size: 11px; letter-spacing: 0.5px;">Layanan</th>
-                                            <th class="text-uppercase text-muted font-weight-bold" style="width: 24%; font-size: 11px; letter-spacing: 0.5px;">Nama Persyaratan</th>
-                                            <th class="text-uppercase text-muted font-weight-bold" style="font-size: 11px; letter-spacing: 0.5px;">Keterangan</th>
-                                            <th class="text-uppercase text-muted font-weight-bold text-center" style="width: 18%; font-size: 11px; letter-spacing: 0.5px;">Aksi</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" scope="col">Layanan</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" scope="col">Nama Persyaratan</th>
+                                            <th class="text-uppercase text-muted font-weight-bold" scope="col">Keterangan</th>
+                                            <th class="text-uppercase text-muted font-weight-bold text-center all" scope="col" data-priority="1">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -55,12 +64,12 @@
                                                     </td>
                                                     <td class="font-weight-bold text-dark align-middle"><?= esc($row['berkasNama']) ?></td>
                                                     <td class="text-muted align-middle"><?= esc($row['berkasKeterangan'] ?? '') ?></td>
-                                                    <td class="text-center align-middle">
+                                                    <td class="refsyarat-actions text-nowrap text-center align-middle">
                                                         <a href="<?= ($update_url ?? '#') . $key ?>" title="Ubah Data" class="btn btn-sm btn-label-brand btn-bold">
-                                                            <i class="flaticon2-edit"></i> Ubah
+                                                            <i class="flaticon2-edit" aria-hidden="true"></i> Ubah
                                                         </a>
                                                         <a href="<?= ($delete_url ?? '#') . $key ?>" title="Hapus Data" id="ts_remove_row<?= $i; ?>" class="ts_remove_row btn btn-sm btn-label-danger btn-bold ml-1">
-                                                            <i class="flaticon2-trash"></i> Hapus
+                                                            <i class="flaticon2-trash" aria-hidden="true"></i> Hapus
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -90,3 +99,18 @@
     </div>
 </div>
 <!--End::Row-->
+
+<style {csp-style-nonce}>
+    #ref_table thead th {
+        font-size: 11px;
+        letter-spacing: 0.5px;
+    }
+    #ref_table col.refsyarat-col-layanan { width: 22%; }
+    #ref_table col.refsyarat-col-nama { width: 24%; }
+    #ref_table col.refsyarat-col-keterangan { width: auto; }
+    #ref_table col.refsyarat-col-aksi { width: 190px; }
+    @media (max-width: 767.98px) {
+        #ref_table { min-width: 720px; }
+        #ref_table col.refsyarat-col-aksi { width: 190px; }
+    }
+</style>

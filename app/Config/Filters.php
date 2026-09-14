@@ -3,11 +3,12 @@
 namespace Config;
 
 use App\Filters\AuthFilter;
+use App\Filters\EnvironmentAwareToolbar;
 use App\Filters\GuestFilter;
+use App\Filters\ThrottleFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
-use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\ForceHTTPS;
 use CodeIgniter\Filters\Honeypot;
 use CodeIgniter\Filters\InvalidChars;
@@ -30,7 +31,14 @@ class Filters extends BaseFilters
         'auth'          => AuthFilter::class,
         'guest'         => GuestFilter::class,
         'csrf'          => CSRF::class,
-        'toolbar'       => DebugToolbar::class,
+        // Fix K4 (task 27.1, bugfix.md 2.17-2.20): EnvironmentAwareToolbar
+        // menambahkan pengecekan ENVIRONMENT === 'development' LANGSUNG
+        // sebelum mendelegasikan ke DebugToolbar::after() (vendor) —
+        // lihat docblock App\Filters\EnvironmentAwareToolbar untuk
+        // detail lengkap. CI_ENVIRONMENT=production WAJIB tetap diatur
+        // eksplisit di server publik; filter ini adalah pertahanan
+        // KEDUA (defense-in-depth), bukan pengganti konfigurasi tersebut.
+        'toolbar'       => EnvironmentAwareToolbar::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
@@ -38,6 +46,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'throttle'      => ThrottleFilter::class,
     ];
 
     /**
@@ -77,12 +86,12 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
-            // 'invalidchars',
+            'csrf',
+            'invalidchars',
         ],
         'after' => [
             // 'honeypot',
-            // 'secureheaders',
+            'secureheaders',
         ],
     ];
 
@@ -152,6 +161,31 @@ class Filters extends BaseFilters
         'guest' => [
             'before' => [
                 'login',
+            ],
+        ],
+        // Rate limiting per-IP (Task 19.2, bugfix.md T2/M3, Requirement
+        // 2.29, 2.30, 2.42, 2.43) — HANYA route ini yang dibatasi, TIDAK
+        // via $globals agar route lain tidak terpengaruh. Setiap alias
+        // filter dengan argumen berbeda ('throttle:otentifikasi', dst)
+        // memakai ambang batas per-route dari Config\Throttle::$routes
+        // (lihat app/Filters/ThrottleFilter.php untuk implementasi —
+        // BUKAN Services::throttler() bawaan CI4, karena fasilitas
+        // tersebut tidak ada di versi framework terinstall — lihat
+        // docblock ThrottleFilter untuk detail lengkap).
+        'throttle:otentifikasi' => [
+            'before' => [
+                'otentifikasi',
+                'otentifikasi/*',
+            ],
+        ],
+        'throttle:login/savetiket' => [
+            'before' => [
+                'login/savetiket',
+            ],
+        ],
+        'throttle:login/cektiket' => [
+            'before' => [
+                'login/cektiket',
             ],
         ],
     ];

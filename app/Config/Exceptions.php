@@ -2,9 +2,11 @@
 
 namespace Config;
 
+use App\Exceptions\AjaxSecurityExceptionHandler;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Debug\ExceptionHandler;
 use CodeIgniter\Debug\ExceptionHandlerInterface;
+use CodeIgniter\Security\Exceptions\SecurityException;
 use Psr\Log\LogLevel;
 use Throwable;
 
@@ -101,6 +103,18 @@ class Exceptions extends BaseConfig
      */
     public function handler(int $statusCode, Throwable $exception): ExceptionHandlerInterface
     {
+        // Task 18.3 (bugfix.md 1.17, 2.24): kegagalan validasi CSRF
+        // (SecurityException, dilempar filter global 'csrf' yang
+        // diaktifkan task 18.1) pada request AJAX/JSON SHALL direspons
+        // graceful ({'status': 'danger', 'message': '...'}), bukan
+        // body kosong/HTML mentah. Request non-AJAX (navigasi form
+        // biasa) TIDAK terpengaruh — AjaxSecurityExceptionHandler
+        // mendelegasikan sepenuhnya ke ExceptionHandler bawaan untuk
+        // kasus tersebut.
+        if ($exception instanceof SecurityException) {
+            return new AjaxSecurityExceptionHandler();
+        }
+
         return new ExceptionHandler($this);
     }
 }

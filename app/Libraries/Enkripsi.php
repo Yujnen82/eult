@@ -10,24 +10,56 @@ namespace App\Libraries;
  * base64 URL-aman. Algoritma mengikuti CI_Encryption 3.1.13
  * (AES-256-CBC OpenSSL + HKDF-SHA512).
  *
- * Kunci default dari .env (EULT_ENCRYPTION_LEGACY_KEY), fallback ke
- * kunci legacy CI3 agar data lama tetap terbaca. Jangan ganti kunci
- * ini sampai seluruh URL lama kedaluwarsa.
+ * Kunci default dari .env (EULT_ENCRYPTION_LEGACY_KEY). Fallback
+ * hardcode legacy CI3 HANYA berlaku untuk environment development/
+ * testing (agar workflow lokal tidak terganggu) — fallback tersebut
+ * SUDAH DIHAPUS dari jalur production per keputusan remediasi K3
+ * (final, tanpa periode transisi): di production, operator WAJIB
+ * mengisi EULT_ENCRYPTION_LEGACY_KEY dengan nilai acak kuat (≥32 byte,
+ * berbeda dari nilai fallback lama) — lihat dokumentasi operasional
+ * rotasi kunci K3 untuk detail konsekuensi (seluruh link tiket lama
+ * yang dibuat dengan kunci hardcode akan invalid setelah rotasi).
  */
 class Enkripsi
 {
     private string $metode = 'aes-256-cbc';
 
+    /** Nilai fallback hardcode legacy CI3 — HANYA dipakai di environment development/testing, TIDAK PERNAH di production. */
+    private const FALLBACK_HARDCODE_LEGACY = 'SuPer_Enc-Key2010';
+
     private function kunciLegacy(): string
     {
-        if (function_exists('env')) {
-            $dariEnv = env('EULT_ENCRYPTION_LEGACY_KEY');
-            if (is_string($dariEnv) && $dariEnv !== '') {
-                return $dariEnv;
+        $dariEnv = function_exists('env') ? env('EULT_ENCRYPTION_LEGACY_KEY') : null;
+        $dariEnv = (is_string($dariEnv) && $dariEnv !== '') ? $dariEnv : null;
+
+        if (defined('ENVIRONMENT') && ENVIRONMENT === 'production') {
+            if ($dariEnv === null) {
+                // Kunci production tidak terisi — JANGAN kembalikan fallback
+                // hardcode. Kembalikan string kosong agar caller (encode()/
+                // decodeDenganKunci()) menolak operasi secara eksplisit
+                // alih-alih diam-diam memakai kunci publik yang ter-commit
+                // di git.
+                return '';
             }
+
+            if ($dariEnv === self::FALLBACK_HARDCODE_LEGACY) {
+                // Kunci production TERISI namun masih identik nilai default
+                // lama — defense-in-depth: catat peringatan kritis, TETAP
+                // pakai nilai tersebut untuk sesi berjalan ini (tidak
+                // diblokir otomatis, operator yang bertanggung jawab
+                // merotasi kunci).
+                if (function_exists('log_message')) {
+                    log_message('critical', 'Kunci enkripsi production masih sama dengan nilai default/hardcode — harus dirotasi.');
+                }
+            }
+
+            return $dariEnv;
         }
 
-        return 'SuPer_Enc-Key2010';
+        // Development/testing: perilaku existing dipertahankan persis —
+        // kunci dari .env jika terisi, jika tidak fallback hardcode legacy
+        // TANPA log/warning apa pun (agar workflow lokal tidak terganggu).
+        return $dariEnv ?? self::FALLBACK_HARDCODE_LEGACY;
     }
 
     public function safeB64Encode(string $string): string
@@ -148,6 +180,13 @@ class Enkripsi
 
     private function decodeDenganKunci(string $nilai, string $mentah): string|false
     {
+        if ($mentah === '') {
+            // Konsisten dengan encode(): kunci mentah kosong (production
+            // tanpa EULT_ENCRYPTION_LEGACY_KEY terisi) SHALL TIDAK PERNAH
+            // menghasilkan decode yang "berhasil" secara tidak terkontrol.
+            return false;
+        }
+
         $kunciEnkrip = $this->hkdf($mentah, 'sha512', null, strlen($mentah), 'encryption');
         $kunciHmac   = $this->hkdf($mentah, 'sha512', null, null, 'authentication');
 

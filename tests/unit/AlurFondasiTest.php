@@ -46,7 +46,15 @@ final class AlurFondasiTest extends CIUnitTestCase
         $hasil = $this->get('login/refresh_captcha');
 
         $hasil->assertOK();
-        $hasil->assertJSONFragment(['captcha' => session()->get('captcha')]);
+
+        // T2 (Requirement 2.28): endpoint refresh TIDAK LAGI mengirim
+        // string captcha plaintext — respons berisi URL gambar (dengan
+        // nonce cache-busting, sehingga tidak exact-match statis) yang
+        // membaca ulang session()->get('captcha') saat diakses.
+        $json = json_decode($hasil->getJSON(), true);
+        self::assertIsArray($json);
+        self::assertArrayHasKey('captcha_image_url', $json);
+        self::assertStringStartsWith(base_url('login/captcha_image'), (string) $json['captcha_image_url']);
     }
 
     public function testHomeDashboardTerbukaDenganSesiLogin(): void

@@ -108,7 +108,7 @@
     <div id="second-form" class="response-hide"></div>
 </div>
 
-<script>
+<script {csp-script-nonce}>
 document.addEventListener('DOMContentLoaded', function() {
     // Interaksi tombol pill filter cepat status
     $(document).on('click', '.status-pill', function(e) {

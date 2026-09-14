@@ -2,10 +2,6 @@
 
 // Class Definition
 var FormGeneral = function() {
-    $('#ref_table').margetable({
-        type: 2,
-        colindex: [0, 1]
-    });
     var handleClickDelete = function() {
         $(".ts_remove_row").click(function(e) {
             e.preventDefault();

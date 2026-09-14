@@ -16,6 +16,7 @@ $routes->group('login', static function ($routes) {
     $routes->post('getLayanan', 'Login::getLayanan');
     $routes->post('getSyarat', 'Login::getSyarat');
     $routes->get('refresh_captcha', 'Login::refreshCaptcha');
+    $routes->get('captcha_image', 'Login::captchaImage');
 });
 
 $routes->group('otentifikasi', static function ($routes) {
@@ -27,7 +28,7 @@ $routes->group('otentifikasi', static function ($routes) {
 $routes->group('cektiket', static function ($routes) {
     $routes->get('index/(:any)', 'Cektiket::index/$1');
     $routes->post('save_replies', 'Cektiket::saveReplies');
-    $routes->post('rating', 'Cektiket::rating');
+    $routes->post('rating/(:any)', 'Cektiket::rating/$1');
     $routes->get('cetakterima/(:any)', 'Cektiket::cetakterima/$1');
     $routes->get('loadpdf/(:any)', 'Cektiket::loadpdf/$1');
     $routes->get('loadattach/(:segment)/(:segment)', 'Cektiket::loadattach/$1/$2');
@@ -35,8 +36,8 @@ $routes->group('cektiket', static function ($routes) {
 
 // Validasi surat publik via QR (setara $route['validitas/(:any)'] CI3)
 $routes->group('validitas', static function ($routes) {
-    $routes->get('(:any)', 'Validitas::index/$1');
     $routes->get('loadpdf/(:any)', 'Validitas::loadpdf/$1');
+    $routes->get('(:any)', 'Validitas::index/$1');
 });
 
 // Area terproteksi (dijaga filter 'auth')

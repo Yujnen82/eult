@@ -9,3 +9,4 @@
 - Expects code changes to be test-backed: write failing regression tests first, implement, then run the full test suite green before reporting done. Confidence: 0.5
 - Expects fixes to be verified against the running local deployment (curl checks of real URLs, including unauthenticated access), not just unit tests. Confidence: 0.5
 - Tracks remaining security findings as a spec/checklist document in `.kiro/specs/.../bugfix.md` and expects work to follow those items and report which remain. Confidence: 0.5
+- Issues terse imperative change requests that name a single feature/module and the desired behavior (e.g. "ubah upload pada cektiket hanya support pdf only"), and expects the change to stay confined to that target rather than being generalized to parallel features (e.g. the staff-side upload). Confidence: 0.5

@@ -26,7 +26,7 @@
 
     <link rel="shortcut icon" href="<?= base_url(); ?>assets/media/logos/favicon_unmul.ico" />
 
-    <style>
+    <style {csp-style-nonce}>
         /* ==========================================================================
            E-ULT v2 Civic Academic Registry - Surface Styling & Adaptive Layout
            ========================================================================== */
@@ -701,6 +701,8 @@
         }
 
         .captcha-display {
+            display: block;
+            height: 50px;
             font-family: 'Poppins', sans-serif;
             font-size: 1.5rem;
             font-weight: 700;
@@ -1232,6 +1234,7 @@
             }
 
             .captcha-display {
+                height: 44px;
                 font-size: 1.5rem;
                 letter-spacing: 4px;
                 padding: 3px 10px;
@@ -1256,6 +1259,25 @@
                 align-items: center;
                 justify-content: center;
                 margin-top: 6px;
+            }
+
+            /* Penyesuaian Secondary Staff Access Banner pada Layar Mobile */
+            .eult-staff-banner {
+                padding: 1rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .eult-staff-banner__content {
+                margin-bottom: 0.75rem;
+            }
+
+            .eult-staff-banner__action .btn {
+                width: 100%;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Penyesuaian Dropzone & Kartu Berkas pada Layar Mobile */
@@ -1312,6 +1334,429 @@
                 font-size: 11px;
             }
         }
+
+        /* ==========================================================================
+           E-ULT v2 Interactive Gateway Cards (Card-as-Button System)
+           ========================================================================== */
+        .eult-gateway-cards {
+            width: 100%;
+            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .eult-portal-card {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #ebedf2;
+            border-radius: 12px;
+            padding: 2.25rem 1.75rem 1.75rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 4px 18px 0 rgba(82, 63, 105, 0.06);
+            transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.25, 1),
+                        box-shadow 0.28s cubic-bezier(0.2, 0.8, 0.25, 1),
+                        border-color 0.28s ease,
+                        background-color 0.28s ease;
+            overflow: hidden;
+            text-align: left;
+            outline: none;
+        }
+
+        /* Top Accent Glow on Cards */
+        .eult-portal-card__glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            transition: height 0.25s ease, opacity 0.25s ease;
+            opacity: 0.95;
+        }
+
+        .eult-portal-card--create .eult-portal-card__glow {
+            background: linear-gradient(90deg, #5d78ff 0%, #7d93ff 100%);
+        }
+
+        .eult-portal-card--track .eult-portal-card__glow {
+            background: linear-gradient(90deg, #36a3f7 0%, #68bdfa 100%);
+        }
+
+        .eult-portal-card--whatsapp .eult-portal-card__glow {
+            background: linear-gradient(90deg, #0abb87 0%, #25D366 100%);
+        }
+
+        .eult-portal-card--signin .eult-portal-card__glow {
+            background: linear-gradient(90deg, #1e1e2d 0%, #444558 100%);
+        }
+
+        /* Semantic Badge */
+        .eult-portal-card__badge-wrap {
+            margin-bottom: 1.25rem;
+        }
+
+        .eult-portal-card__badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 12px;
+            border-radius: 2rem;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .eult-portal-card__badge.badge-brand {
+            background: rgba(93, 120, 255, 0.1);
+            color: #5d78ff;
+            border: 1px solid rgba(93, 120, 255, 0.2);
+        }
+
+        .eult-portal-card__badge.badge-info {
+            background: rgba(54, 163, 247, 0.1);
+            color: #36a3f7;
+            border: 1px solid rgba(54, 163, 247, 0.2);
+        }
+
+        .eult-portal-card__badge.badge-success {
+            background: rgba(10, 187, 135, 0.1);
+            color: #0abb87;
+            border: 1px solid rgba(10, 187, 135, 0.2);
+        }
+
+        .eult-portal-card__badge.badge-dark {
+            background: rgba(30, 30, 45, 0.08);
+            color: #1e1e2d;
+            border: 1px solid rgba(30, 30, 45, 0.15);
+        }
+
+        /* Icon Box */
+        .eult-portal-card__icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            margin-bottom: 1.4rem;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.25s ease, color 0.25s ease;
+        }
+
+        .eult-portal-card--create .eult-portal-card__icon-box {
+            background: #f0f3ff;
+            color: #5d78ff;
+        }
+
+        .eult-portal-card--track .eult-portal-card__icon-box {
+            background: #e8f7ff;
+            color: #36a3f7;
+        }
+
+        .eult-portal-card--whatsapp .eult-portal-card__icon-box {
+            background: #e8fff3;
+            color: #0abb87;
+        }
+
+        .eult-portal-card--signin .eult-portal-card__icon-box {
+            background: #f2f3f8;
+            color: #1e1e2d;
+        }
+
+        /* Typography */
+        .eult-portal-card__title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e1e2d;
+            margin-bottom: 0.65rem;
+            letter-spacing: -0.015em;
+            line-height: 1.3;
+        }
+
+        .eult-portal-card__desc {
+            font-size: 13px;
+            color: #646c9a;
+            line-height: 1.6;
+            margin-bottom: 1.75rem;
+            flex-grow: 1;
+        }
+
+        /* Card Action CTA */
+        .eult-portal-card__action {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1.1rem;
+            border-top: 1px dashed #ebedf2;
+            margin-top: auto;
+        }
+
+        .eult-portal-card__btn-text {
+            font-size: 13px;
+            font-weight: 600;
+            transition: color 0.25s ease;
+        }
+
+        .eult-portal-card--create .eult-portal-card__btn-text {
+            color: #5d78ff;
+        }
+
+        .eult-portal-card--track .eult-portal-card__btn-text {
+            color: #36a3f7;
+        }
+
+        .eult-portal-card--whatsapp .eult-portal-card__btn-text {
+            color: #0abb87;
+        }
+
+        .eult-portal-card--signin .eult-portal-card__btn-text {
+            color: #1e1e2d;
+        }
+
+        .eult-portal-card__arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f4f5f8;
+            font-size: 11px;
+            transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.25, 1), background-color 0.25s ease, color 0.25s ease;
+        }
+
+        .eult-portal-card--create .eult-portal-card__arrow {
+            color: #5d78ff;
+        }
+
+        .eult-portal-card--track .eult-portal-card__arrow {
+            color: #36a3f7;
+        }
+
+        .eult-portal-card--whatsapp .eult-portal-card__arrow {
+            color: #0abb87;
+        }
+
+        .eult-portal-card--signin .eult-portal-card__arrow {
+            color: #1e1e2d;
+        }
+
+        /* Card Hover Animations */
+        .eult-portal-card:hover {
+            transform: translateY(-8px) scale(1.015);
+            box-shadow: 0 20px 38px -10px rgba(82, 63, 105, 0.15);
+        }
+
+        .eult-portal-card--create:hover {
+            border-color: #5d78ff;
+        }
+        .eult-portal-card--create:hover .eult-portal-card__icon-box {
+            background: #5d78ff;
+            color: #ffffff;
+            transform: scale(1.1) rotate(4deg);
+        }
+        .eult-portal-card--create:hover .eult-portal-card__arrow {
+            background: #5d78ff;
+            color: #ffffff;
+            transform: translateX(6px);
+        }
+
+        .eult-portal-card--track:hover {
+            border-color: #36a3f7;
+        }
+        .eult-portal-card--track:hover .eult-portal-card__icon-box {
+            background: #36a3f7;
+            color: #ffffff;
+            transform: scale(1.1) rotate(-4deg);
+        }
+        .eult-portal-card--track:hover .eult-portal-card__arrow {
+            background: #36a3f7;
+            color: #ffffff;
+            transform: translateX(6px);
+        }
+
+        .eult-portal-card--whatsapp:hover {
+            border-color: #0abb87;
+        }
+        .eult-portal-card--whatsapp:hover .eult-portal-card__icon-box {
+            background: #0abb87;
+            color: #ffffff;
+            transform: scale(1.1) rotate(4deg);
+        }
+        .eult-portal-card--whatsapp:hover .eult-portal-card__arrow {
+            background: #0abb87;
+            color: #ffffff;
+            transform: translateX(6px);
+        }
+
+        .eult-portal-card--signin:hover {
+            border-color: #1e1e2d;
+        }
+        .eult-portal-card--signin:hover .eult-portal-card__icon-box {
+            background: #1e1e2d;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        .eult-portal-card--signin:hover .eult-portal-card__arrow {
+            background: #1e1e2d;
+            color: #ffffff;
+            transform: translateX(6px);
+        }
+
+        /* Active / Press State Feedback Taktil */
+        .eult-portal-card:active {
+            transform: translateY(-2px) scale(0.985) !important;
+            box-shadow: 0 6px 16px -4px rgba(82, 63, 105, 0.2) !important;
+            transition-duration: 0.08s;
+        }
+
+        /* Focus-visible untuk Aksesibilitas Keyboard */
+        .eult-portal-card:focus-visible {
+            outline: 3px solid #5d78ff;
+            outline-offset: 4px;
+        }
+        .eult-portal-card--track:focus-visible {
+            outline-color: #36a3f7;
+        }
+        .eult-portal-card--whatsapp:focus-visible {
+            outline-color: #0abb87;
+        }
+        .eult-portal-card--signin:focus-visible {
+            outline-color: #1e1e2d;
+        }
+
+        /* Secondary Staff Access Banner (Tidak Dominan) */
+        .eult-staff-banner {
+            background: #ffffff;
+            border: 1px solid #e2e5ec;
+            border-radius: 8px;
+            padding: 1.1rem 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(82, 63, 105, 0.03);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .eult-staff-banner:hover {
+            border-color: #c9ccd6;
+            box-shadow: 0 4px 14px rgba(82, 63, 105, 0.06);
+        }
+
+        .eult-staff-banner__content {
+            display: flex;
+            align-items: center;
+        }
+
+        .eult-staff-banner__icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #f4f5f8;
+            color: #595d6e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .eult-staff-banner__title {
+            margin: 0 0 2px 0;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #282a3c;
+            letter-spacing: -0.01em;
+        }
+
+        .eult-staff-banner__desc {
+            margin: 0;
+            font-size: 12px;
+            color: #74788d;
+            line-height: 1.4;
+        }
+
+        .eult-staff-banner__action {
+            flex-shrink: 0;
+        }
+
+        /* Single Stage Navigation & Topbar */
+        .eult-stage-container {
+            width: 100%;
+            transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .eult-stage-topbar {
+            background: #ffffff;
+            border: 1px solid #ebedf2;
+            border-radius: 8px;
+            padding: 0.85rem 1.25rem;
+            box-shadow: 0 2px 10px rgba(82, 63, 105, 0.04);
+        }
+
+        .eult-back-to-gateway {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1.15rem;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .eult-back-to-gateway i {
+            transition: transform 0.2s ease;
+        }
+
+        .eult-back-to-gateway:hover i {
+            transform: translateX(-4px);
+        }
+
+        .eult-stage-mini-tabs .btn {
+            padding: 0.45rem 0.95rem;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        /* Animasi Transisi Masuk & Keluar Panggung */
+        .eult-anim-fade-out {
+            opacity: 0 !important;
+            transform: scale(0.97) translateY(10px) !important;
+            pointer-events: none;
+            transition: opacity 0.18s cubic-bezier(0.4, 0, 0.2, 1), transform 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .eult-anim-fade-in {
+            animation: eultStageFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes eultStageFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97) translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .eult-portal-card,
+            .eult-portal-card__icon-box,
+            .eult-portal-card__arrow,
+            .eult-back-to-gateway,
+            .eult-gateway-cards,
+            .eult-stage-container {
+                transition: none !important;
+                transform: none !important;
+                animation: none !important;
+            }
+        }
     </style>
 </head>
 <!-- end::Head -->
@@ -1360,45 +1805,155 @@
             <p class="eult-hero-desc">
                 Sistem satu pintu pengajuan surat dinas, legalisir, perbaikan data akademik, dan pemantauan disposisi tiket layanan kampus.
             </p>
-
-            <!-- begin:: Mode Navigation Pills -->
-            <div class="eult-nav-tabs-wrapper">
-                <div class="eult-nav-tabs" role="tablist" aria-label="Pilihan Layanan E-ULT">
-                    <a href="#create" class="eult-nav-btn active" id="eult-tab-create" data-target="create" role="tab" aria-selected="true" aria-controls="kt-login--create">
-                        <i class="flaticon-edit-1"></i> 
-                        <span>Ajukan Tiket</span>
-                    </a>
-                    <a href="#track" class="eult-nav-btn" id="eult-tab-track" data-target="track" role="tab" aria-selected="false" aria-controls="kt-login--track">
-                        <i class="flaticon-search-1"></i> 
-                        <span>Lacak Tiket</span>
-                    </a>
-                    <a href="#signin" class="eult-nav-btn" id="eult-tab-signin" data-target="signin" role="tab" aria-selected="false" aria-controls="kt-login--signin">
-                        <i class="flaticon-lock"></i> 
-                        <span>Akses Petugas</span>
-                    </a>
-                </div>
+            <div class="mt-3">
+                <span class="badge badge-secondary px-3 py-2 text-muted" style="border-radius: 2rem; font-size: 12px; font-weight: 500; background: #ffffff; border: 1px solid #ebedf2; box-shadow: 0 2px 6px rgba(82,63,105,0.04);">
+                    <i class="flaticon2-layers-1 text-primary mr-1"></i> Pilih modul layanan di bawah ini untuk memulai pengajuan, pelacakan tiket, atau konsultasi ULT
+                </span>
             </div>
-            <!-- end:: Mode Navigation Pills -->
         </div>
     </section>
     <!-- end:: Hero Section -->
 
     <!-- begin:: Main Content Stage -->
     <main class="eult-card-container">
-        <div class="kt-login" id="kt_login">
+        <!-- begin:: 3 Animated Gateway Cards (Interactive Buttons) -->
+        <div class="eult-gateway-cards" id="eult_gateway_cards">
+            <div class="row">
+                <!-- Card 1: Ajukan Tiket Layanan -->
+                <div class="col-lg-4 col-md-6 col-12 mb-4 d-flex">
+                    <div role="button" tabindex="0" class="eult-portal-card eult-portal-card--create w-100" id="card-trigger-create" data-target="create" aria-label="Buka Formulir Pengajuan Tiket Layanan">
+                        <div class="eult-portal-card__glow"></div>
+                        <div class="eult-portal-card__badge-wrap">
+                            <span class="eult-portal-card__badge badge-brand">
+                                <i class="flaticon2-document mr-1"></i> Layanan Pengajuan
+                            </span>
+                        </div>
+                        <div class="eult-portal-card__icon-box">
+                            <i class="flaticon-edit-1"></i>
+                        </div>
+                        <div class="eult-portal-card__content">
+                            <h3 class="eult-portal-card__title">Ajukan Tiket Layanan</h3>
+                            <p class="eult-portal-card__desc">Pengajuan surat izin riset, legalisir ijazah, rekomendasi, dan permohonan layanan akademik/kemahasiswaan.</p>
+                        </div>
+                        <div class="eult-portal-card__action">
+                            <span class="eult-portal-card__btn-text">Buka Formulir Pengajuan</span>
+                            <span class="eult-portal-card__arrow"><i class="flaticon2-right-arrow"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Lacak Status Tiket -->
+                <div class="col-lg-4 col-md-6 col-12 mb-4 d-flex">
+                    <div role="button" tabindex="0" class="eult-portal-card eult-portal-card--track w-100" id="card-trigger-track" data-target="track" aria-label="Buka Pelacakan Status Tiket">
+                        <div class="eult-portal-card__glow"></div>
+                        <div class="eult-portal-card__badge-wrap">
+                            <span class="eult-portal-card__badge badge-info">
+                                <i class="flaticon2-search mr-1"></i> Pelacakan Mandiri
+                            </span>
+                        </div>
+                        <div class="eult-portal-card__icon-box">
+                            <i class="flaticon-search-1"></i>
+                        </div>
+                        <div class="eult-portal-card__content">
+                            <h3 class="eult-portal-card__title">Lacak Status Tiket</h3>
+                            <p class="eult-portal-card__desc">Pantau posisi berkas, disposisi unit verifikator, verifikasi syarat, dan unduh dokumen hasil layanan.</p>
+                        </div>
+                        <div class="eult-portal-card__action">
+                            <span class="eult-portal-card__btn-text">Lacak Dokumen Sekarang</span>
+                            <span class="eult-portal-card__arrow"><i class="flaticon2-right-arrow"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Chat WhatsApp ULT (Bantuan & Konsultasi Publik) -->
+                <div class="col-lg-4 col-md-12 col-12 mb-4 d-flex">
+                    <a href="https://wa.me/628115809970" target="_blank" rel="noopener noreferrer" class="eult-portal-card eult-portal-card--whatsapp w-100 text-decoration-none" id="card-trigger-whatsapp" aria-label="Buka Chat WhatsApp ULT">
+                        <div class="eult-portal-card__glow"></div>
+                        <div class="eult-portal-card__badge-wrap">
+                            <span class="eult-portal-card__badge badge-success">
+                                <i class="fab fa-whatsapp mr-1"></i> Bantuan & Konsultasi
+                            </span>
+                        </div>
+                        <div class="eult-portal-card__icon-box">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="eult-portal-card__content">
+                            <h3 class="eult-portal-card__title">Chat WhatsApp ULT</h3>
+                            <p class="eult-portal-card__desc">Konsultasi persyaratan berkas, panduan permohonan, dan bantuan operasional langsung dengan helpdesk ULT UNMUL.</p>
+                        </div>
+                        <div class="eult-portal-card__action">
+                            <span class="eult-portal-card__btn-text">Hubungi Petugas ULT</span>
+                            <span class="eult-portal-card__arrow"><i class="flaticon2-right-arrow"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- begin:: Secondary Staff Access Banner (Akses Petugas Dibuat Tidak Dominan) -->
+            <div class="eult-staff-banner mt-1" id="eult_staff_banner">
+                <div class="eult-staff-banner__content">
+                    <div class="eult-staff-banner__icon">
+                        <i class="flaticon-lock"></i>
+                    </div>
+                    <div class="eult-staff-banner__text">
+                        <h4 class="eult-staff-banner__title">Akses Masuk Petugas & Administrator</h4>
+                        <p class="eult-staff-banner__desc">Khusus petugas loket ULT, verifikator berkas unit kerja, operator disposisi fakultas, dan pimpinan pengesahan dokumen.</p>
+                    </div>
+                </div>
+                <div class="eult-staff-banner__action">
+                    <button type="button" class="btn btn-outline-brand btn-bold font-weight-bold px-4 py-2 eult-nav-trigger" id="card-trigger-signin" data-target="signin" aria-label="Buka Akses Masuk Petugas dan Admin">
+                        <i class="flaticon-lock mr-1"></i> Masuk Area Petugas
+                    </button>
+                </div>
+            </div>
+            <!-- end:: Secondary Staff Access Banner -->
+        </div>
+        <!-- end:: 3 Animated Gateway Cards -->
+
+        <!-- begin:: Single Stage Form Container -->
+        <div class="kt-login eult-stage-container" id="kt_login" style="display: none;">
+            <!-- begin:: Stage Top Bar Navigation -->
+            <div class="eult-stage-topbar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                <button type="button" class="btn btn-outline-brand btn-bold btn-sm eult-back-to-gateway" id="eult_back_to_gateway" aria-label="Kembali ke Menu Layanan">
+                    <i class="flaticon2-left-arrow-1 mr-2"></i> Kembali ke Menu Layanan
+                </button>
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                    <div class="eult-stage-mini-tabs btn-group" role="group" aria-label="Peralihan Cepat Modul">
+                        <button type="button" class="btn btn-sm btn-label-brand font-weight-bold eult-mini-tab" data-target="create" id="eult-mini-create">
+                            <i class="flaticon-edit-1 mr-1"></i> Ajukan
+                        </button>
+                        <button type="button" class="btn btn-sm btn-clean text-muted font-weight-bold eult-mini-tab" data-target="track" id="eult-mini-track">
+                            <i class="flaticon-search-1 mr-1"></i> Lacak
+                        </button>
+                        <button type="button" class="btn btn-sm btn-clean text-muted font-weight-bold eult-mini-tab" data-target="signin" id="eult-mini-signin">
+                            <i class="flaticon-lock mr-1"></i> Petugas
+                        </button>
+                    </div>
+                    <span class="badge badge-brand font-weight-bold px-3 py-2 ml-md-2" id="eult_stage_title_badge">
+                        Formulir Pengajuan Tiket
+                    </span>
+                </div>
+            </div>
+            <!-- end:: Stage Top Bar Navigation -->
 
             <!-- =================================================================
                  1. FORM BUAT TIKET PUBLIK (Mode Create - Default Aktif)
                  ================================================================= -->
-            <div class="kt-login__create" id="kt-login--create" role="tabpanel" aria-labelledby="eult-tab-create">
+            <div class="kt-login__create" id="kt-login--create" role="tabpanel" aria-labelledby="card-trigger-create">
                 <div class="eult-portlet">
                     <div class="eult-portlet-head">
                         <h3 class="eult-portlet-head-title">
                             <i class="flaticon-file-2"></i> Formulir Pengajuan Permohonan Layanan
                         </h3>
+                        <div class="eult-portlet-head-toolbar">
+                            <button type="button" class="btn btn-clean btn-sm btn-bold eult-back-to-gateway text-primary">
+                                <i class="flaticon2-left-arrow-1 mr-1"></i> Menu Layanan
+                            </button>
+                        </div>
                     </div>
 
                     <form class="kt-form" action="<?= base_url('login') . '/savetiket' ?>" method="POST" enctype="multipart/form-data" novalidate="novalidate" id="kt_create_form">
+                        <?= csrf_field() ?>
                         <div class="eult-portlet-body">
 
                             <!-- Section A: Identitas Pemohon -->
@@ -1623,7 +2178,11 @@
                                     <div class="col-md-5">
                                         <div class="eult-captcha-box">
                                             <div>
-                                                <span class="captcha-display"><?= $captcha ?></span>
+                                                <?php if (!empty($captcha_image_url)): ?>
+                                                    <img src="<?= esc($captcha_image_url) ?>" class="captcha-display" alt="Captcha">
+                                                <?php else: ?>
+                                                    <span class="captcha-display"><?= esc($captcha ?? '') ?></span>
+                                                <?php endif; ?>
                                             </div>
                                             <a href="#" class="refresh-captcha">
                                                 <i class="flaticon-refresh"></i> Acak Ulang
@@ -1660,15 +2219,21 @@
             <!-- =================================================================
                  2. FORM LACAK TIKET PUBLIK (Mode Track)
                  ================================================================= -->
-            <div class="kt-login__track" id="kt-login--track" role="tabpanel" aria-labelledby="eult-tab-track" style="display: none;">
+            <div class="kt-login__track" id="kt-login--track" role="tabpanel" aria-labelledby="card-trigger-track" style="display: none;">
                 <div class="eult-portlet" style="max-width: 680px; margin: 0 auto;">
                     <div class="eult-portlet-head">
                         <h3 class="eult-portlet-head-title">
                             <i class="flaticon-search-1"></i> Lacak Status Permohonan Tiket
                         </h3>
+                        <div class="eult-portlet-head-toolbar">
+                            <button type="button" class="btn btn-clean btn-sm btn-bold eult-back-to-gateway text-primary">
+                                <i class="flaticon2-left-arrow-1 mr-1"></i> Menu Layanan
+                            </button>
+                        </div>
                     </div>
 
                     <form class="kt-form" action="<?= base_url('login') . '/cektiket' ?>" method="POST" novalidate="novalidate" id="kt_track_form">
+                        <?= csrf_field() ?>
                         <div class="eult-portlet-body">
                             <p class="eult-guide-text">
                                 Masukkan nomor tiket pengajuan untuk memeriksa riwayat disposisi, progres verifikasi berkas, dan mengunduh surat resmi yang telah diterbitkan.
@@ -1692,9 +2257,9 @@
 
                         <div class="eult-portlet-foot">
                             <div>
-                                <a href="#create" class="btn btn-clean text-primary eult-nav-trigger" data-target="create">
-                                    <i class="flaticon2-left-arrow-1 mr-1"></i> Kembali ke Form Pengajuan
-                                </a>
+                                <button type="button" class="btn btn-clean text-primary eult-back-to-gateway">
+                                    <i class="flaticon2-left-arrow-1 mr-1"></i> Kembali ke Menu Layanan
+                                </button>
                             </div>
                             <div>
                                 <button id="kt_track_submit" class="btn btn-brand btn-elevate font-weight-bold px-4">
@@ -1709,15 +2274,21 @@
             <!-- =================================================================
                  3. FORM LOGIN PETUGAS / PEGAWAI (Mode Sign In)
                  ================================================================= -->
-            <div class="kt-login__signin" id="kt-login--signin" role="tabpanel" aria-labelledby="eult-tab-signin" style="display: none;">
+            <div class="kt-login__signin" id="kt-login--signin" role="tabpanel" aria-labelledby="card-trigger-signin" style="display: none;">
                 <div class="eult-portlet" style="max-width: 520px; margin: 0 auto;">
                     <div class="eult-portlet-head">
                         <h3 class="eult-portlet-head-title">
                             <i class="flaticon-lock"></i> Masuk Area Petugas & Verifikator
                         </h3>
+                        <div class="eult-portlet-head-toolbar">
+                            <button type="button" class="btn btn-clean btn-sm btn-bold eult-back-to-gateway text-primary">
+                                <i class="flaticon2-left-arrow-1 mr-1"></i> Menu Layanan
+                            </button>
+                        </div>
                     </div>
 
                     <form class="kt-form" action="<?= base_url() . 'otentifikasi' ?>" method="post" novalidate="novalidate" id="kt_login_form">
+                        <?= csrf_field() ?>
                         <div class="eult-portlet-body">
                             <p class="eult-guide-text-sm">
                                 Masuk untuk petugas loket ULT, verifikator unit kerja, pejabat penandatangan dokumen, dan administrator sistem.
@@ -1752,7 +2323,11 @@
                                 <label class="eult-label">Konfirmasi Keamanan (Captcha) <span class="req">*</span></label>
                                 <div class="eult-captcha-box">
                                     <div>
-                                        <span class="captcha-display"><?= $captcha ?></span>
+                                        <?php if (!empty($captcha_image_url)): ?>
+                                            <img src="<?= esc($captcha_image_url) ?>" class="captcha-display" alt="Captcha">
+                                        <?php else: ?>
+                                            <span class="captcha-display"><?= esc($captcha ?? '') ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <a href="#" class="refresh-captcha">
                                         <i class="flaticon-refresh"></i> Refresh
@@ -1764,9 +2339,9 @@
 
                         <div class="eult-portlet-foot">
                             <div>
-                                <a href="#create" class="btn btn-clean text-primary eult-nav-trigger" data-target="create">
-                                    <i class="flaticon2-left-arrow-1 mr-1"></i> Layanan Publik
-                                </a>
+                                <button type="button" class="btn btn-clean text-primary eult-back-to-gateway">
+                                    <i class="flaticon2-left-arrow-1 mr-1"></i> Kembali ke Menu Layanan
+                                </button>
                             </div>
                             <div>
                                 <button id="kt_signin_submit" class="btn btn-brand btn-elevate font-weight-bold px-4">
@@ -1786,23 +2361,6 @@
             <button id="kt_tracking" type="button"></button>
             <button id="kt_signin" type="button"></button>
         </div>
-
-        <!-- begin:: WhatsApp Helpdesk Card -->
-        <div class="eult-help-card">
-            <div class="eult-help-content">
-                <div class="eult-help-icon">
-                    <i class="fab fa-whatsapp"></i>
-                </div>
-                <div class="eult-help-text">
-                    <h5>Butuh Bantuan atau Informasi Layanan Terpadu?</h5>
-                    <p>Layanan konsultasi dan helpdesk ULT Universitas Mulawarman siap membantu Anda pada jam kerja operasional.</p>
-                </div>
-            </div>
-            <a href="https://wa.me/628115809970" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-elevate font-weight-bold px-4 py-2" style="background-color: #0abb87; border-color: #0abb87;">
-                <i class="fab fa-whatsapp mr-1"></i> Chat WhatsApp ULT
-            </a>
-        </div>
-        <!-- end:: WhatsApp Helpdesk Card -->
     </main>
     <!-- end:: Main Content Stage -->
 
@@ -1822,7 +2380,7 @@
     <!-- end:: Footer -->
 
     <!-- begin::Global Config(global config for global JS scripts) -->
-    <script>
+    <script {csp-script-nonce}>
         var KTAppOptions = {
             "colors": {
                 "state": {
@@ -1854,34 +2412,139 @@
     <!--end::Page Scripts -->
 
     <!--begin::Delight Navigation Controller & Feedback Scripts -->
-    <script>
+    <script {csp-script-nonce}>
         jQuery(document).ready(function($) {
-            // Sinkronisasi navigasi mode (create / track / signin)
-            function switchEultMode(targetMode) {
-                $('.eult-nav-btn').attr('aria-selected', 'false').removeClass('active');
-                $('#eult-tab-' + targetMode).attr('aria-selected', 'true').addClass('active');
+            // =========================================================================
+            // Pengendali Transisi Panggung Tunggal (3 Animated Gateway Cards <-> Form Stage)
+            // =========================================================================
+            var activeMode = null;
+            var titles = {
+                'create': 'Formulir Pengajuan Tiket',
+                'track': 'Pelacakan Status Tiket',
+                'signin': 'Autentikasi Petugas & Admin'
+            };
 
-                if (targetMode === 'create') {
-                    $('#kt_create').trigger('click');
-                } else if (targetMode === 'track') {
-                    $('#kt_tracking').trigger('click');
-                } else if (targetMode === 'signin') {
-                    $('#kt_signin').trigger('click');
+            function updateStageMiniTabs(targetMode) {
+                $('.eult-mini-tab').removeClass('btn-label-brand active').addClass('btn-clean text-muted');
+                $('#eult-mini-' + targetMode).removeClass('btn-clean text-muted').addClass('btn-label-brand active');
+                $('#eult_stage_title_badge').text(titles[targetMode] || 'Layanan E-ULT');
+            }
+
+            function openStage(targetMode, animated) {
+                var $cards = $('#eult_gateway_cards');
+                var $stage = $('#kt_login');
+                activeMode = targetMode;
+
+                updateStageMiniTabs(targetMode);
+
+                var showForm = function() {
+                    if (targetMode === 'create') {
+                        $('#kt_create').trigger('click');
+                    } else if (targetMode === 'track') {
+                        $('#kt_tracking').trigger('click');
+                    } else if (targetMode === 'signin') {
+                        $('#kt_signin').trigger('click');
+                    }
+
+                    $stage.show().removeClass('eult-anim-fade-out').addClass('eult-anim-fade-in');
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', '#' + targetMode);
+                    }
+                    KTUtil.scrollTop();
+                };
+
+                if (animated && $cards.is(':visible')) {
+                    $cards.addClass('eult-anim-fade-out');
+                    setTimeout(function() {
+                        $cards.hide().removeClass('eult-anim-fade-out');
+                        showForm();
+                    }, 180);
+                } else {
+                    $cards.hide();
+                    showForm();
                 }
             }
 
-            $('.eult-nav-btn, .eult-nav-trigger').on('click', function(e) {
-                e.preventDefault();
+            function closeStageToGateway() {
+                var $cards = $('#eult_gateway_cards');
+                var $stage = $('#kt_login');
+
+                $stage.addClass('eult-anim-fade-out');
+                setTimeout(function() {
+                    $stage.hide().removeClass('eult-anim-fade-out eult-anim-fade-in');
+                    $cards.show().removeClass('eult-anim-fade-out').addClass('eult-anim-fade-in');
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+                    } else {
+                        window.location.hash = '';
+                    }
+                    KTUtil.scrollTop();
+
+                    // Kembalikan fokus keyboard ke kartu yang sebelumnya dipilih
+                    if (activeMode && $('#card-trigger-' + activeMode).length) {
+                        $('#card-trigger-' + activeMode).focus();
+                    } else {
+                        $('#card-trigger-create').focus();
+                    }
+                }, 180);
+            }
+
+            // Event click pada 3 Interactive Gateway Cards
+            $('.eult-portal-card').on('click', function(e) {
                 var target = $(this).data('target');
                 if (target) {
-                    switchEultMode(target);
+                    e.preventDefault();
+                    openStage(target, true);
                 }
             });
 
-            // Default saat halaman terbuka: tampilkan mode buat tiket
-            setTimeout(function() {
-                switchEultMode('create');
-            }, 100);
+            // Aksesibilitas Keyboard: Enter atau Space pada Card
+            $('.eult-portal-card').on('keydown', function(e) {
+                var target = $(this).data('target');
+                if (target) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openStage(target, true);
+                    }
+                } else if ($(this).is('a') && e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+
+            // Tombol Kembali ke Menu Layanan
+            $(document).on('click', '.eult-back-to-gateway', function(e) {
+                e.preventDefault();
+                closeStageToGateway();
+            });
+
+            // Peralihan cepat via mini tabs di dalam panggung formulir
+            $('.eult-mini-tab').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).data('target');
+                if (target) {
+                    openStage(target, false);
+                }
+            });
+
+            // Trigger eksternal (misal: tombol 'Akses Petugas' di navbar)
+            $('.eult-nav-trigger').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).data('target');
+                if (target) {
+                    openStage(target, true);
+                }
+            });
+
+            // Deteksi rute URL hash awal (#create, #track, #signin)
+            var initialHash = (window.location.hash || '').replace('#', '');
+            if (initialHash === 'create' || initialHash === 'track' || initialHash === 'signin') {
+                openStage(initialHash, false);
+            } else {
+                // Tampilan awal: 3 Gateway Card aktif, kontainer panggung tersembunyi
+                $('#eult_gateway_cards').show();
+                $('#kt_login').hide();
+            }
 
             // Indikator visual real-time saat nomor identitas diketik
             $('#ticketIdentitas').on('input', function() {

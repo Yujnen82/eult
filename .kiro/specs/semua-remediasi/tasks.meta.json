@@ -1,5 +1,39 @@
 {
-  "pbtResults": {},
+  "pbtResults": {
+    "6. Tulis test eksplorasi bug condition T4 (rating tanpa validasi kepemilikan)": {
+      "status": "passed",
+      "failingExample": "testRatingTersimpanUntukTiketTebakanTanpaKunciApapun: Failed asserting that Array &0 ['ratingNilai' => '5.0', 'ratingTicketId' => 'QEHO-HTTV-001'] is null. (Rating for real ticket QEHO-HTTV-001 was successfully written to d_rating using only a guessed/known ticket number, with no encrypted kunci ever decoded.) | testKondisiPengirimanEmailSelesaiTerpenuhiUntukTiketTebakan: Failed asserting that byId(['ticketTrackingId' => 'QEHO-HTTV-001']) returns Array (ticketEmail => 'rizkyfkemala@gmail.com', ...) is false. (The sole gate `if ($datas !== false)` before `$this->email->selesai()` in Cektiket::rating() is structurally TRUE for this guessed ticket number — proving the email-trigger condition would fire for a real person's inbox with zero ownership validation.)",
+      "lastRunTimestamp": 1789339189170
+    },
+    "12. Tulis test eksplorasi bug condition T1 (CSRF/filter global dinonaktifkan)": {
+      "status": "passed",
+      "failingExample": "testPostSavetiketTanpaTokenCsrfDitolakDenganResponsErrorDanTidakAdaInsert GAGAL (sesuai harapan) pada kode belum diperbaiki: POST FeatureTestTrait ke login/savetiket tanpa header/field CSRF apa pun (semua gerbang lain terpuaskan: validasi $aturan lengkap, captcha benar via withSession(['captcha'=>'T1OK']) dicocokkan field POST captcha='T1OK', header X-Requested-With: XMLHttpRequest untuk isAJAX()=true) menghasilkan respons HTTP 200 dengan body JSON {\"status\":\"success\",\"message\":\"Permintaan layanan anda berhasil disimpan, nomor tiket anda adalah YUMV-NQTG-001...\",\"new_captcha\":\"...\"} DAN baris d_ticketing BENAR-BENAR ter-INSERT (ticketTrackingId: YUMV-NQTG-001, ticketEmail: t1csrf-uji@example.invalid, beserta seluruh kolom lain terisi normal termasuk ticketArchiveId: YUMVNQTG0010001). Assertion self::assertNull($tiketTercipta, ...) gagal karena $tiketTercipta adalah array baris nyata, bukan null — membuktikan request diproses PENUH tanpa validasi CSRF apa pun. Dua test lain (sanity prasyarat + verifikasi programatik bahwa app/Views/layouts/login.php tidak mengandung csrf_field()/csrf_token()/csrf_hash() apa pun, baik via pembacaan source maupun render HTML sungguhan mencari input name=\"csrf_test_name\") LULUS seperti seharusnya.",
+      "lastRunTimestamp": 1789341811750
+    },
+    "15. Tulis test eksplorasi bug condition M1 (header keamanan tidak lengkap)": {
+      "status": "passed",
+      "failingExample": "testHalamanPublikTidakMengandungHeaderCspDanXFrameOptions: assertNotSame('', getHeaderLine('Content-Security-Policy')) — Failed asserting that two strings are not identical (actual: ''). testHalamanPublikTidakMengandungHeaderXContentTypeOptionsDanReferrerPolicy: assertNotSame('', getHeaderLine('X-Content-Type-Options')) — Failed asserting that two strings are not identical (actual: ''). testKonfigurasiCspEnabledMasihFalsePadaKodeAsli: assertTrue($CSPEnabled) — Failed asserting that false is true. Full observed header dump for GET /login on unfixed code: Cache-Control: no-store, max-age=0, no-cache; Content-Type: text/html; charset=UTF-8 — Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, and Referrer-Policy are ALL absent.",
+      "lastRunTimestamp": 1789344031879
+    },
+    "16. Tulis test eksplorasi bug condition M3 (enumerasi tiket tanpa rate limit)": {
+      "status": "unexpected_pass",
+      "failingExample": "testEnumerasiNomorTiketBeruntunDiprosesTanpaRateLimitDanSinyalTetapTerbedakan PASSED unexpectedly on unfixed code (Exit Code 0, OK, 6 assertions, no failures). All 15 requests to POST login/cektiket returned HTTP 200; \"ditemukan\"/\"tidak ditemukan\" signal was correctly distinguishable in all 15 responses (8/8 valid-ticket requests showed \"ditemukan\", 7/7 guessed-ticket requests showed \"tidak ditemukan\"), and 0 requests were rejected with 429 — exactly matching the real unfixed behavior (no throttle exists). ROOT CAUSE: the assertions were written in \"prove absence of rate-limit\" polarity (assertSame(0, $jumlahDitolakRateLimit), assertSame(15, $jumlahStatusHttp200), assertSame($expected, $jumlahSinyalBenar)) — this polarity is TRUE on unfixed code (no throttle → 0 rejections → assertion passes), so it can never fail to prove the bug exists; it would only fail once a throttle is later added, at which point it becomes a preservation-style regression check instead of a bug-condition check. Cross-checked against the T2 precedent file itself (tests/Bugfix/T2CaptchaRateLimitExplorationTest.php) by re-running it: confirmed only 1 of its 3 test methods actually fails on unfixed code (testCaptchaTerbacaLangsungDariDomTanpaOcr, via assertNotSame on the DOM-readable captcha value); its two rate-limit methods (testSeluruhRequestOtentifikasiBeruntunDiprosesTanpaRateLimit, testSeluruhRequestSavetiketSuksesBeruntunDiprosesTanpaRateLimit) use the identical flawed polarity and ALSO pass on unfixed code today, a fact their own docblocks already acknowledge (\"MEMANG 0 pada kode asli, sehingga test ini justru 'lulus'\"). T2's overall task-level PASS was carried entirely by its independent captcha-DOM claim, which M3 has no equivalent of (M3 is a pure rate-limiting claim with nothing else to carry a mandatory failure). Correct fix for the assertion polarity (not yet applied, pending user decision): assert that rate-limiting IS present/effective (e.g. assertGreaterThan(0, $jumlahDitolakRateLimit) or assert enumeration is measurably hindered) — which is false on unfixed code and would correctly fail, proving the bug.",
+      "lastRunTimestamp": 1789344300271
+    },
+    "23. Tulis test eksplorasi bug condition K3 (fallback hardcode production)": {
+      "status": "passed",
+      "failingExample": "Skenario A (production + EULT_ENCRYPTION_LEGACY_KEY kosong): assertNotSame(NILAI_PROBE='TIKET_PROBE_K3', decodedWithLiteralHardcodedKey) GAGAL — decode() dengan kunci literal hardcode 'SuPer_Enc-Key2010' berhasil mengembalikan 'TIKET_PROBE_K3', membuktikan kunciLegacy() memakai fallback hardcode sebagai kunci efektif walau ENVIRONMENT=production. Skenario B (production + EULT_ENCRYPTION_LEGACY_KEY=SuPer_Enc-Key2010 identik fallback): assertTrue(logFileContainsMarker) GAGAL — logFileSizeBeforeBytes=441004 sama dengan logFileSizeAfterBytes=441004 (tidak bertambah), marker unik K3_MARKER_* tidak ditemukan di file log, membuktikan tidak ada log_message('critical', ...) apa pun dipanggil.",
+      "lastRunTimestamp": 1789356526031
+    },
+    "29. Tulis test eksplorasi bug condition R1 (audit binding tanpa esc())": {
+      "status": "passed",
+      "lastRunTimestamp": 1789382143109
+    },
+    "31.2 Verifikasi test eksplorasi bug condition R1 sekarang lulus (untuk binding yang diperbaiki, jika ada)": {
+      "status": "passed",
+      "lastRunTimestamp": 1789382717229
+    }
+  },
   "executionHistory": {
     "1. Tulis test eksplorasi bug condition K1": [
       {
@@ -62,6 +96,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789320500500
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789320703882
       }
     ],
     "3.3 Verifikasi test eksplorasi bug condition sekarang lulus": [
@@ -69,6 +108,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857478
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789320723165
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322261978
       }
     ],
     "3.4 Verifikasi test preservasi masih lulus": [
@@ -76,6 +125,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857481
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322268685
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322362401
       }
     ],
     "4. Checkpoint Klaster 1 - Pastikan seluruh test K1 lulus": [
@@ -83,6 +142,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857483
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322373521
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322387729
       }
     ],
     "5. Tulis test eksplorasi bug condition K2/M2 (endpoint download tanpa validasi kepemilikan)": [
@@ -90,6 +159,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857486
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322422124
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789338855259
       }
     ],
     "6. Tulis test eksplorasi bug condition T4 (rating tanpa validasi kepemilikan)": [
@@ -97,6 +176,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857488
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789338878997
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339237002
       }
     ],
     "7. Tulis test properti preservasi K2/T4/M2 (SEBELUM implementasi fix)": [
@@ -104,6 +193,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857489
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339245150
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339560908
       }
     ],
     "8.1 Implementasikan fix pada `Cektiket::loadpdf()`": [
@@ -111,6 +210,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857491
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339571301
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339681186
       }
     ],
     "8.2 Implementasikan fix pada `Cektiket::loadattach()`": [
@@ -118,6 +227,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857494
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339688005
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339798170
       }
     ],
     "8.3 Implementasikan fix pada `Validitas::loadpdf()`": [
@@ -125,6 +244,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857496
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789339806937
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340194246
       }
     ],
     "8.4 Verifikasi test eksplorasi bug condition K2 sekarang lulus": [
@@ -132,6 +261,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857497
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340204973
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340294704
       }
     ],
     "9.1 Implementasikan fix pada `Cektiket::rating()`": [
@@ -139,6 +278,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857500
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340340405
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340591201
       }
     ],
     "9.2 Verifikasi test eksplorasi bug condition T4 sekarang lulus": [
@@ -146,6 +295,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857501
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340600492
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340933363
       }
     ],
     "10.1 Implementasikan fix pada `Ticketing::loadpdf()`/`Ticketing::loadattach()`": [
@@ -153,6 +312,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857503
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340972686
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341120532
       }
     ],
     "10.2 Verifikasi test eksplorasi bug condition M2 sekarang lulus": [
@@ -160,6 +329,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857505
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341133741
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341148471
       }
     ],
     "10.3 Verifikasi seluruh test preservasi Klaster 2 masih lulus": [
@@ -167,6 +346,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857508
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341158661
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341167136
       }
     ],
     "11. Checkpoint Klaster 2 - Pastikan seluruh test K2/T4/M2 lulus": [
@@ -174,6 +363,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857509
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341179904
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341205979
       }
     ],
     "12. Tulis test eksplorasi bug condition T1 (CSRF/filter global dinonaktifkan)": [
@@ -181,6 +380,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857511
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341234960
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341860112
       }
     ],
     "13. Tulis test eksplorasi bug condition T2 (captcha kosmetik + tidak ada rate limit)": [
@@ -188,6 +397,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857514
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341870921
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789343092316
       }
     ],
     "14. Tulis test eksplorasi bug condition T3 (cookie captcha bypass)": [
@@ -195,6 +414,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857515
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789343105633
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789343796176
       }
     ],
     "15. Tulis test eksplorasi bug condition M1 (header keamanan tidak lengkap)": [
@@ -202,6 +431,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857517
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789343805349
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789344057310
       }
     ],
     "16. Tulis test eksplorasi bug condition M3 (enumerasi tiket tanpa rate limit)": [
@@ -209,6 +448,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857519
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789344069971
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348319568
       }
     ],
     "17. Tulis test properti preservasi Klaster 3 (SEBELUM implementasi fix)": [
@@ -216,6 +465,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857521
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348328888
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348676150
       }
     ],
     "18.1 Aktifkan filter global di `app/Config/Filters.php`": [
@@ -223,6 +482,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857523
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348691100
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348988389
       }
     ],
     "18.2 Tambahkan CSRF token pada form dan JavaScript AJAX": [
@@ -230,6 +499,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857525
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789348998034
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383083139
       }
     ],
     "18.3 Tambahkan graceful handler untuk kegagalan CSRF pada request AJAX": [
@@ -237,6 +516,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857527
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789350534815
       }
     ],
     "18.4 Verifikasi test eksplorasi bug condition T1 sekarang lulus": [
@@ -244,6 +528,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857530
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789351181580
       }
     ],
     "19.1 Implementasikan captcha sebagai gambar": [
@@ -251,6 +540,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857532
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789351463945
       }
     ],
     "19.2 Implementasikan rate limiting per-IP": [
@@ -258,6 +552,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857533
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789352598514
       }
     ],
     "19.3 Verifikasi test eksplorasi bug condition T2 dan M3 sekarang lulus": [
@@ -265,6 +564,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857536
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789353246105
       }
     ],
     "20.1 Implementasikan fix pada `eult_captcha_check()`": [
@@ -272,6 +576,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857537
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789353595161
       }
     ],
     "20.2 Verifikasi test eksplorasi bug condition T3 sekarang lulus": [
@@ -279,6 +588,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857539
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789353763853
       }
     ],
     "21.1 Implementasikan CSP": [
@@ -286,6 +600,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857541
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789354027255
       }
     ],
     "21.2 Verifikasi test eksplorasi bug condition M1 sekarang lulus": [
@@ -293,6 +612,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857544
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789354624614
       }
     ],
     "21.3 Verifikasi seluruh test preservasi Klaster 3 masih lulus": [
@@ -300,6 +624,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857546
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789354990584
       }
     ],
     "22. Checkpoint Klaster 3 - Pastikan seluruh test T1/T2/T3/M1/M3 lulus": [
@@ -307,6 +636,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857548
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789355155773
       }
     ],
     "23. Tulis test eksplorasi bug condition K3 (fallback hardcode production)": [
@@ -314,6 +648,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857551
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789355825583
       }
     ],
     "24. Tulis test eksplorasi bug condition K4 (toolbar debug publik)": [
@@ -321,6 +660,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857553
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789356629948
       }
     ],
     "25. Tulis test properti preservasi Klaster 4 (SEBELUM implementasi fix)": [
@@ -328,6 +672,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857555
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789358351279
       }
     ],
     "26.1 Implementasikan fix pada `Enkripsi::kunciLegacy()`": [
@@ -335,6 +684,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857557
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789359114339
       }
     ],
     "26.2 Verifikasi test eksplorasi bug condition K3 sekarang lulus": [
@@ -342,6 +696,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857560
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789363743866
       }
     ],
     "27.1 Implementasikan environment-aware toolbar filter": [
@@ -349,6 +708,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857562
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789363835756
       }
     ],
     "27.2 Verifikasi test eksplorasi bug condition K4 sekarang lulus": [
@@ -356,6 +720,11 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857565
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789364157467
       }
     ],
     "27.3 Verifikasi seluruh test preservasi Klaster 4 masih lulus": [
@@ -363,6 +732,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857567
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789364743107
+      },
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789364834248
       }
     ],
     "28. Checkpoint Klaster 4 - Pastikan seluruh test K3/K4 lulus": [
@@ -370,6 +749,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857569
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789381700862
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789381810064
       }
     ],
     "29. Tulis test eksplorasi bug condition R1 (audit binding tanpa esc())": [
@@ -377,6 +766,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857571
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789381825310
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382203565
       }
     ],
     "30. Tulis test properti preservasi R1 (SEBELUM implementasi fix, jika ada)": [
@@ -384,6 +783,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857573
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382209410
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382497737
       }
     ],
     "31.1 Implementasikan esc() pada binding yang ditemukan TIDAK aman (jika ada dari hasil audit task 29)": [
@@ -391,6 +800,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857574
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382505551
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382662516
       }
     ],
     "31.2 Verifikasi test eksplorasi bug condition R1 sekarang lulus (untuk binding yang diperbaiki, jika ada)": [
@@ -398,6 +817,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857576
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382670781
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382743680
       }
     ],
     "31.3 Verifikasi test preservasi R1 masih lulus": [
@@ -405,6 +834,16 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857579
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382749704
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382840695
       }
     ],
     "32. Checkpoint R1 - Pastikan seluruh test audit lulus": [
@@ -412,6 +851,93 @@
         "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
         "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
         "timestamp": 1789317857581
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382848442
+      },
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382923641
+      }
+    ],
+    "3. Fix K1: Ganti kondisi WHERE string mentah dengan array binding": [
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789322362408
+      }
+    ],
+    "8. Fix K2: Kepemilikan berkas via kunci terenkripsi pada endpoint publik": [
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340294708
+      }
+    ],
+    "9. Fix T4: Rating memakai kunci terenkripsi (bukan nomorTiket mentah)": [
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789340933368
+      }
+    ],
+    "10. Fix M2: Ownership check pada `Ticketing::loadpdf()`/`loadattach()` (admin)": [
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789341167142
+      }
+    ],
+    "27. Fix K4: Kunci toolbar hanya ke environment development (keputusan final)": [
+      {
+        "executionId": "1387edda-81e3-4c1f-840a-3b599ba42e29",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789364834252
+      }
+    ],
+    "31. Fix R1 (kondisional): Tambahkan esc() pada binding yang ditemukan belum aman saat audit": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789382840700
+      }
+    ],
+    "18. Fix T1: Aktifkan CSRF, secureheaders, honeypot, invalidchars": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383083146
+      }
+    ],
+    "19. Fix T2/M3: Captcha gambar + rate limiting": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383110699
+      }
+    ],
+    "20. Fix T3: Hapus fallback cookie captcha": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383111610
+      }
+    ],
+    "21. Fix M1: Aktifkan CSP dan header lengkap": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383112602
+      }
+    ],
+    "26. Fix K3: Hapus fallback hardcode dari jalur production (keputusan final, tanpa transisi)": [
+      {
+        "executionId": "092a671f-3e94-47e0-927f-de0ff97f022d",
+        "chatSessionId": "sess_5dc38b2d-122d-4424-84c1-c0b76e3604f0",
+        "timestamp": 1789383113637
       }
     ]
   }

@@ -556,7 +556,7 @@ if (!empty($fileItems) && is_iterable($fileItems)) {
     </div>
 </div>
 
-<script>
+<script {csp-script-nonce}>
 document.addEventListener('DOMContentLoaded', function () {
     // Penanganan klik pratinjau dokumen modal
     $('.btn-preview-doc').on('click', function (e) {

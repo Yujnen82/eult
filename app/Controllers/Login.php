@@ -43,13 +43,45 @@ class Login extends BaseController
 
     public function index(): string
     {
-        $captcha = eult_captcha_generate(4);
+        // Nilai captcha TIDAK PERNAH dikirim plaintext ke view — hanya
+        // di-generate/disimpan ke session; view merender gambar via
+        // endpoint captchaImage() dengan nonce cache-busting.
+        eult_captcha_generate(4);
 
         return view('layouts/login', [
-            'captcha'    => $captcha,
-            'r_priority' => $this->tiket->tabelRef('r_priority'),
-            'datas'      => false,
+            'captcha_image_url' => $this->urlGambarCaptcha(),
+            'r_priority'        => $this->tiket->tabelRef('r_priority'),
+            'datas'             => false,
         ]);
+    }
+
+    /**
+     * URL endpoint gambar captcha dengan nonce cache-busting, dibaca
+     * ulang oleh browser setiap kali dipanggil (index, refresh, atau
+     * respons AJAX new_captcha) sehingga TIDAK PERNAH ada string
+     * captcha plaintext yang ikut terkirim ke klien.
+     */
+    private function urlGambarCaptcha(): string
+    {
+        return base_url('login/captcha_image') . '?t=' . time();
+    }
+
+    /**
+     * Menyajikan captcha CURRENT (session) sebagai gambar PNG.
+     * TIDAK men-generate ulang nilai captcha — nilai yang divalidasi
+     * eult_captcha_check() harus sama dengan yang ditampilkan di gambar.
+     */
+    public function captchaImage(): \CodeIgniter\HTTP\ResponseInterface
+    {
+        $teks = session()->get('captcha');
+
+        if (! is_string($teks) || $teks === '') {
+            $teks = eult_captcha_generate(4);
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', 'image/png')
+            ->setBody(eult_captcha_image($teks));
     }
 
     public function cektiket()
@@ -92,18 +124,22 @@ class Login extends BaseController
         ];
 
         if (! $this->validate($aturan)) {
+            eult_captcha_generate(4);
+
             return $this->response->setJSON([
                 'status'      => 'danger',
                 'message'     => strip_tags(implode(' ', array_values($this->validator->getErrors()))),
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
         if (! eult_captcha_check((string) $this->request->getPost('captcha'))) {
+            eult_captcha_generate(4);
+
             return $this->response->setJSON([
                 'status'      => 'danger',
                 'message'     => 'CAPTCHA yang Anda masukkan tidak valid.',
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
@@ -125,7 +161,7 @@ class Login extends BaseController
         $nama     = (string) $this->request->getPost('ticketName');
         $email    = (string) $this->request->getPost('ticketEmail');
         $arsipId  = str_replace('-', '', $idTiket);
-        $arsipBaru = eult_auto_increment('d_archive', 'archiveId', $arsipId, "archiveTrackingId='" . $idTiket . "'");
+        $arsipBaru = eult_auto_increment('d_archive', 'archiveId', $arsipId, ['archiveTrackingId' => $idTiket]);
 
         $konfig = [
             'url'      => WRITEPATH . 'uploads/ticketing/',
@@ -165,13 +201,15 @@ class Login extends BaseController
         if ($proses) {
             eult_save_history('Tiket Telah Dibuat Oleh ' . $nama, $idTiket);
 
-            $datas = $this->tiket->byId("ticketTrackingId = '" . $idTiket . "'");
+            $datas = $this->tiket->byId(['ticketTrackingId' => $idTiket]);
             $this->email->buat($email, 'Tiket EULT UNMUL #' . $idTiket, $datas);
+
+            eult_captcha_generate(4);
 
             return $this->response->setJSON([
                 'status'      => 'success',
                 'message'     => 'Permintaan layanan anda berhasil disimpan, nomor tiket anda adalah ' . $idTiket . '. <br/> Catat nomor tiket anda dan cek progress secara berkala pada menu lacak tiket.',
-                'new_captcha' => eult_captcha_generate(4),
+                'new_captcha' => $this->urlGambarCaptcha(),
             ]);
         }
 
@@ -271,6 +309,13 @@ class Login extends BaseController
 
     public function refreshCaptcha()
     {
-        return $this->response->setJSON(['captcha' => eult_captcha_generate(4)]);
+        // Regenerate nilai session captcha, TAPI JANGAN kirim string
+        // plaintext-nya ke klien — kirim URL endpoint gambar (dengan
+        // nonce cache-busting) yang membaca ulang session terkini.
+        eult_captcha_generate(4);
+
+        return $this->response->setJSON([
+            'captcha_image_url' => $this->urlGambarCaptcha(),
+        ]);
     }
 }

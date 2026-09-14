@@ -15,7 +15,7 @@ $unmatchedTotal   = (int) ($stats['unmatched_total'] ?? ($legacyCount + $orphanC
 $page_judul       = $page_judul ?? 'Validasi & Keamanan Berkas Digital';
 ?>
 
-<script>
+<script {csp-script-nonce}>
     var URL_GET_DATA       = "<?= site_url('validasifile/get_data_ajax'); ?>";
     var URL_GET_QUARANTINE = "<?= site_url('validasifile/get_quarantine_ajax'); ?>";
     var URL_GET_STATS      = "<?= site_url('validasifile/get_stats_ajax'); ?>";

@@ -43,6 +43,19 @@ class ModelMaster extends \CodeIgniter\Model
 
     /**
      * Ambil nilai MAX kolom (setara get_by_last_id CI3).
+     *
+     * @param array<string, mixed>|string $kondisi Kondisi WHERE. Bentuk array (array binding)
+     *                                              WAJIB dipakai untuk kondisi yang berasal dari
+     *                                              input publik/request pengguna. Bentuk string
+     *                                              mentah HANYA diperbolehkan untuk caller
+     *                                              internal yang tidak menerima/meneruskan input
+     *                                              publik langsung ke fragmen kondisi.
+     *
+     * @deprecated-for-public-input Bentuk string TIDAK aman terhadap SQL injection bila
+     *                               $kondisi dibangun dari data pengguna (concatenation).
+     *                               Gunakan bentuk array untuk seluruh caller baru yang
+     *                               menerima input dari request publik (lihat K1 fix pada
+     *                               Cektiket::rating()/Login::savetiket()).
      */
     public function getByLastId(string $tabel, string $kolom, array|string $kondisi = []): array|false
     {

@@ -22,8 +22,8 @@ License: You must have a valid license purchased only from themeforest(the above
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<!--begin::Web font -->
-	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
-	<script>
+	<script src="<?= base_url(); ?>assets/vendor/webfont/1.6.16/webfont.js"></script>
+	<script {csp-script-nonce}>
 		WebFont.load({
 			google: {
 				"families": ["Poppins:300,400,500,600,700", "Roboto:300,400,500,600,700"]
@@ -50,11 +50,11 @@ License: You must have a valid license purchased only from themeforest(the above
 	<link href="<?= base_url(); ?>assets/css/skins/aside/light.css" rel="stylesheet" type="text/css" />
 	<link href="<?= base_url(); ?>assets/css/event.css" rel="stylesheet" type="text/css" />
 	<link href="<?= base_url(); ?>assets/css/star-rating.min.css" media="all" rel="stylesheet" type="text/css" />
-	<link href="https://unpkg.com/tableexport/dist/css/tableexport.min.css" rel="stylesheet" type="text/css" />
+	<link href="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/tableexport.min.css" rel="stylesheet" type="text/css" />
 
 	<!-- optionally if you need to use a theme, then include the theme CSS file as mentioned below -->
 	<link href="<?= base_url(); ?>assets/css/theme-rating.css" media="all" rel="stylesheet" type="text/css" />
-	<style>
+	<style {csp-style-nonce}>
 		.select2 {
 			width: 100% !important;
 		}
@@ -133,7 +133,7 @@ License: You must have a valid license purchased only from themeforest(the above
 	<!-- end::Scrolltop -->
 
 	<!-- begin::Global Config(global config for global JS sciprts) -->
-	<script>
+	<script {csp-script-nonce}>
 		var KTAppOptions = {
 			"colors": {
 				"state": {
@@ -171,7 +171,6 @@ License: You must have a valid license purchased only from themeforest(the above
 	<script src="<?= base_url(); ?>assets/plugins/global/plugins.bundle.js" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/js/scripts.bundle.js" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/plugins/custom/tinymce/tinymce.bundle.js" type="text/javascript"></script>
-	<script src="<?= base_url(); ?>assets/js/pages/jquery.table.marge.js" type="text/javascript"></script>
 	<!--begin::Page Vendors -->
 	<script src="<?= base_url(); ?>assets/plugins/custom/fullcalendar/fullcalendar.bundle.js" type="text/javascript"></script>
 	<script src="<?= base_url(); ?>assets/plugins/custom/datatables/datatables.bundle.js" type="text/javascript"></script>
@@ -191,12 +190,12 @@ License: You must have a valid license purchased only from themeforest(the above
 		<!--end::Page Snippets -->
 
 <!--begin::Page TableExport -->
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/libs/js-xlsx/xlsx.core.min.js"></script>
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/libs/FileSaver/FileSaver.min.js"></script>
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/libs/html2canvas/html2canvas.min.js"></script>
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/tableExport.min.js"></script>
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/libs/jsPDF/jspdf.min.js"></script>
-<script src="https://rawcdn.githack.com/hhurz/tableExport.jquery.plugin/ac867b593f515e2e920aed075e895757f51ee0e4/libs/jsPDF-AutoTable/jspdf.plugin.autotable.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/xlsx.core.min.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/FileSaver.min.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/html2canvas.min.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/tableExport.min.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/jspdf.min.js"></script>
+<script src="<?= base_url(); ?>assets/vendor/tableexport/ac867b5/jspdf.plugin.autotable.js"></script>
 
 <!--end::Page TableExport -->
 

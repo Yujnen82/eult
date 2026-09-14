@@ -47,7 +47,7 @@ class Cektiket extends BaseController
 
         $balasan = $this->tiket->getReplies('d_replies', ['repliesTicketId' => $nomorTiket]);
         $riwayat = $this->tiket->getHistory((string) $nomorTiket);
-        $output  = $this->tiket->ambilSatu('d_archive', "archiveTrackingId = '" . $nomorTiket . "' AND archiveJenis = 'OUTPUT'");
+        $output  = $this->tiket->ambilSatu('d_archive', ['archiveTrackingId' => $nomorTiket, 'archiveJenis' => 'OUTPUT']);
 
         return view('pages/ticketing/detail_user', [
             'page_judul'  => 'Cek Tiket',
@@ -57,6 +57,7 @@ class Cektiket extends BaseController
             'save_url'    => site_url('cektiket/save_replies') . '/',
             'close_url'   => site_url('cektiket/close') . '/' . $kunci,
             'load_attach' => site_url('cektiket/loadattach') . '/' . $kunci,
+            'rating_url'  => site_url('cektiket/rating') . '/' . $kunci,
             'replies'     => $balasan,
             'user_group'  => $datas['ticketName'],
             'breadcrumb'  => 'cektiket',
@@ -74,7 +75,7 @@ class Cektiket extends BaseController
 
         $konfig = [
             'url'      => WRITEPATH . 'uploads/chat/',
-            'type'     => 'pdf|jpg|png',
+            'type'     => 'pdf',
             'size'     => 15 * 1024,
             'namafile' => 'CHAT_' . $idTiket . '_' . date('YmdHis'),
         ];
@@ -103,11 +104,16 @@ class Cektiket extends BaseController
         return $this->index((string) $this->enkripsi->encode($idTiket));
     }
 
-    public function rating()
+    public function rating(string $kunci = '')
     {
-        $rating     = $this->request->getPost('rating');
-        $nomorTiket = (string) $this->request->getPost('nomorTiket');
-        $param      = ['ratingNilai' => $rating, 'ratingTicketId' => $nomorTiket];
+        $nomorTiket = $this->enkripsi->decode($kunci);
+
+        if (empty($nomorTiket)) {
+            eult_message_kirim('Kunci tidak valid.', 'error');
+        }
+
+        $rating = $this->request->getPost('rating');
+        $param  = ['ratingNilai' => $rating, 'ratingTicketId' => $nomorTiket];
 
         $datas = $this->tiket->byId(['ticketTrackingId' => $nomorTiket]);
         $cek   = $this->tiket->ambilSatu('d_rating', ['ratingTicketId' => $nomorTiket]);
@@ -127,6 +133,7 @@ class Cektiket extends BaseController
         }
 
         if ($proses) {
+            $this->response->setHeader(csrf_header(), csrf_hash());
             eult_message_kirim('Terimakasih Telah Mengisi IKM, Untuk layanan dengan permintaan berkas, berkas telah kami kirimkan via email. Mohon Periksa Email Anda.', 'success');
         }
     }

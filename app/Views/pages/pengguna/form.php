@@ -20,6 +20,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= $save_url ?>" method="post" id="form_custom">
+                    <?= csrf_field() ?>
                     <div class="kt-portlet__body">
                         <input type="hidden" name="susrNamaOld" value="<?= $datas != false ? $datas['susrNama'] : '' ?>">
 

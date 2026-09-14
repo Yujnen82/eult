@@ -28,6 +28,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= $save_url ?>" method="post" id="form_form">
+                    <?= csrf_field() ?>
                     <div class="kt-portlet__body">
                         <input type="hidden" name="susrmdgroupNamaOld" value="<?= $datas != false ? esc($datas['susrmdgroupNama']) : '' ?>">
 

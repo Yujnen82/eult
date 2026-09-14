@@ -41,11 +41,15 @@ final class HelperEultTest extends CIUnitTestCase
         $this->assertStringEndsWith('ago', $hasil);
     }
 
-    public function testGeneratePasswordNumerik(): void
+    public function testGeneratePasswordAcakMinimal12Karakter(): void
     {
         $sandi = eult_generate_password(6);
 
-        $this->assertSame(6, strlen($sandi));
-        $this->assertMatchesRegularExpression('/^[0-9]+$/', $sandi);
+        // Permintaan di bawah 12 karakter dinaikkan ke minimum agar password
+        // sementara tidak dapat ditebak (sebelumnya 6 digit angka unik).
+        $this->assertSame(12, strlen($sandi));
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9]+$/', $sandi);
+        $this->assertSame(16, strlen(eult_generate_password(16)));
+        $this->assertNotSame(eult_generate_password(), eult_generate_password());
     }
 }

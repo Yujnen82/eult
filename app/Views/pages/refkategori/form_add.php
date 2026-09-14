@@ -15,10 +15,11 @@
                 </div>
 
                 <!--begin::Form-->
-                <form class="kt-form" action="<?=$save_url?>" method="post" id="form_form">
+                <form class="kt-form" action="<?= esc($save_url) ?>" method="post" id="form_form">
                     <div class="kt-portlet__body">
-                        <input type="hidden" name="categoryIdOld" value="<?=$datas!=false?$datas['sCatId']:''?>">
-                        <input type="hidden" name="sCatCategoryId" value="<?=$datas!=false?$datas['sCatCategoryId']:$this->uri->segment(3)?>">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="categoryIdOld" value="<?= esc($datas != false ? $datas['sCatId'] : '', 'attr') ?>">
+                        <input type="hidden" name="sCatCategoryId" value="<?= esc($datas != false ? $datas['sCatCategoryId'] : ($kunci ?? ''), 'attr') ?>">
                         <div class="form-group">
                             <label>Sub Layanan</label>
                             <input type="text" class="form-control" name="sCategoryNama" placeholder="Sub Layanan" aria-describedby="categoryNama" value="<?=$datas!=false?$datas['sCatNama']:''?>">

@@ -20,11 +20,20 @@ if (! function_exists('eult_tanggal_indo')) {
             'Juli', 'Agustus', 'September', 'Oktober', 'Nopember', 'Desember',
         ];
 
-        $tahun = substr($tanggal, 0, 4);
-        $bulan = substr($tanggal, 5, 2);
-        $tgl   = substr($tanggal, 8, 2);
+        // Nilai yang bukan Y-m-d (mis. teks "14 September 2026" dari form
+        // surat) dikembalikan apa adanya, bukan memicu index bulan negatif.
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})/', $tanggal, $bagian) !== 1) {
+            return $tanggal;
+        }
 
-        return $tgl . ' ' . $bulanIndo[(int) $bulan - 1] . ' ' . $tahun;
+        [, $tahun, $bulan, $tgl] = $bagian;
+        $indeksBulan = (int) $bulan - 1;
+
+        if (! isset($bulanIndo[$indeksBulan])) {
+            return $tanggal;
+        }
+
+        return $tgl . ' ' . $bulanIndo[$indeksBulan] . ' ' . $tahun;
     }
 }
 
@@ -65,3 +74,13 @@ if (! function_exists('DateToIndo')) {
     }
 }
 
+
+if (! function_exists('DayToIndo')) {
+    /**
+     * Alias DayToIndo untuk kompatibilitas view lama/CI3 (tanda_terima.php).
+     */
+    function DayToIndo(string $hari): string
+    {
+        return eult_hari_indo($hari);
+    }
+}

@@ -10,6 +10,7 @@
     failOnRisky="true"
     failOnWarning="true"
     cacheDirectory="build/.phpunit.cache"
+    defaultTestSuite="Unit"
 >
     <coverage pathCoverage="false" ignoreDeprecatedCodeUnits="true">
         <report>
@@ -20,9 +21,54 @@
         </report>
     </coverage>
 
+    <!--
+        Suite dipisah menurut infrastruktur yang dibutuhkan:
+        Unit     : mandiri (tanpa MySQL/server), dijalankan default dan di CI.
+        Database : butuh MySQL db_newtiket + db_ult (kredensial .env EULT_DB_*).
+        Live     : menembak server dev live / menjalankan subprocess php built-in server.
+        Jalankan suite lain dengan: vendor/bin/phpunit testsuite Database
+    -->
     <testsuites>
-        <testsuite name="App">
-            <directory>./tests</directory>
+        <testsuite name="Unit">
+            <directory>./tests/unit</directory>
+            <directory>./tests/session</directory>
+            <file>./tests/Bugfix/AdminCspAssetsPreservationTest.php</file>
+            <file>./tests/Bugfix/CspFirstPartyNoncePreservationTest.php</file>
+            <file>./tests/Bugfix/R1EscBindingAuditExplorationTest.php</file>
+            <file>./tests/Bugfix/R1EscPreservationTest.php</file>
+            <exclude>./tests/unit/AksesBerkasTest.php</exclude>
+            <exclude>./tests/unit/AlurFondasiTest.php</exclude>
+            <exclude>./tests/unit/PublicPortalViewsTest.php</exclude>
+        </testsuite>
+        <testsuite name="Database">
+            <directory>./tests/database</directory>
+            <file>./tests/unit/AksesBerkasTest.php</file>
+            <file>./tests/unit/AlurFondasiTest.php</file>
+            <file>./tests/unit/PublicPortalViewsTest.php</file>
+            <file>./tests/Bugfix/K1SqlInjectionExplorationTest.php</file>
+            <file>./tests/Bugfix/K1SqlInjectionPreservationTest.php</file>
+            <file>./tests/Bugfix/K2M2IdorExplorationTest.php</file>
+            <file>./tests/Bugfix/K2T4M2PreservationTest.php</file>
+            <file>./tests/Bugfix/Klaster3PreservationTest.php</file>
+            <file>./tests/Bugfix/M1SecurityHeadersExplorationTest.php</file>
+            <file>./tests/Bugfix/M3TicketEnumerationExplorationTest.php</file>
+            <file>./tests/Bugfix/T1CsrfExplorationTest.php</file>
+            <file>./tests/Bugfix/T2CaptchaRateLimitExplorationTest.php</file>
+            <file>./tests/Bugfix/T2M3RateLimitHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/T3CookieCaptchaBypassExplorationTest.php</file>
+            <file>./tests/Bugfix/T4RatingOwnershipExplorationTest.php</file>
+        </testsuite>
+        <testsuite name="Live">
+            <file>./tests/Bugfix/CektiketUploadPdfOnlyHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/K1SqlInjectionHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/K3EncryptionFallbackExplorationTest.php</file>
+            <file>./tests/Bugfix/K4DebugToolbarExplorationTest.php</file>
+            <file>./tests/Bugfix/Klaster3IntegrasiAntarFixHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/Klaster4PreservationTest.php</file>
+            <file>./tests/Bugfix/M1CspHeaderHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/T1CsrfAjaxGracefulHandlerHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/T2CaptchaImageHttpIntegrationTest.php</file>
+            <file>./tests/Bugfix/T4RatingHttpIntegrationTest.php</file>
         </testsuite>
     </testsuites>
 

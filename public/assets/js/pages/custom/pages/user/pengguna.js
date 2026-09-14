@@ -18,6 +18,7 @@ var FormCustom = function() {
                 e.value && 
                     $.ajax(
                     {
+                        type: 'POST',
                         url:$(idLink).attr('href'),
                         success:function(data) 
                         {
@@ -97,6 +98,7 @@ var FormCustom = function() {
                 e.value && 
                     $.ajax(
                     {
+                        type: 'POST',
                         url:$(idLink).attr('href'),
                         success:function(data) 
                         {

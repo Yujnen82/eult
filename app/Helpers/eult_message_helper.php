@@ -1,10 +1,13 @@
 <?php
 
+use App\Exceptions\ResponsAwalException;
+
 /**
  * Helper pesan JSON EULT.
  * Porting dari CI3 application/helpers/message_helper.php yang
  * mengembalikan JSON {status, message, response, url} lalu exit.
- * Di CI4 respons dikirim via service response agar bisa diuji.
+ * Di CI4 respons dilempar sebagai ResponsableInterface agar dikirim oleh
+ * CodeIgniter::run() (bukan exit), sehingga bisa diuji in-process.
  */
 
 if (! function_exists('eult_message_kirim')) {
@@ -25,7 +28,13 @@ if (! function_exists('eult_message_kirim')) {
             'url' => $url,
         ];
 
-        response()->setJSON($respons)->send();
-        exit;
+        // Status HTTP yang sudah diset controller (mis. 403) dipertahankan;
+        // pesan error tanpa status khusus tetap 200 agar JS existing yang
+        // membaca `res.status` di handler success tidak berubah perilaku.
+        // Token CSRF terbaru ikut dikirim karena respons ini melewati filter
+        // global `after` (ditangkap langsung oleh CodeIgniter::run()).
+        throw new ResponsAwalException(
+            response()->setJSON($respons)->setHeader(csrf_header(), csrf_hash())
+        );
     }
 }

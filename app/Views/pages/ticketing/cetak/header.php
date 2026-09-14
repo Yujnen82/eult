@@ -11,7 +11,7 @@
 </style>
 <table align="center" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 5px">
 	<tr align="center">
-		<td rowspan="5"><img src="../public/assets/media/logos/logo-unmul.png" width="100" height="100" /></td>
+		<td rowspan="5"><img src="<?= FCPATH ?>assets/media/logos/logo-unmul.png" width="100" height="100" /></td>
 		<td class="uppercase text-center f-16">KEMENTERIAN PENDIDIKAN TINGGI,<br> SAINS, DAN TEKNOLOGI</td>
 	</tr>
 	<tr align="center">

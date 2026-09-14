@@ -16,6 +16,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= $save_url ?>" method="post" id="form_reject">
+                    <?= csrf_field() ?>
                     <div class="kt-portlet__body">
                         <div class="form-group">
                             <label>Pesan <strong style="color:red">*</strong></label>

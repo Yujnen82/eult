@@ -54,7 +54,7 @@ class Cektiket extends BaseController
             'datas'       => $datas,
             'history'     => $riwayat,
             'output_url'  => $output !== false ? site_url('cektiket/loadpdf') . '/' . $kunci : false,
-            'save_url'    => site_url('cektiket/save_replies') . '/',
+            'save_url'    => site_url('cektiket/save_replies') . '/' . $kunci,
             'close_url'   => site_url('cektiket/close') . '/' . $kunci,
             'load_attach' => site_url('cektiket/loadattach') . '/' . $kunci,
             'rating_url'  => site_url('cektiket/rating') . '/' . $kunci,
@@ -65,13 +65,28 @@ class Cektiket extends BaseController
         ]);
     }
 
-    public function saveReplies()
+    /**
+     * Balasan pemohon. Tiket ditentukan dari kunci terenkripsi (URL/field
+     * `kunci`), bukan dari nomor tiket mentah, agar pemohon lain tidak bisa
+     * menyisipkan balasan atau memperoleh tautan tiket orang lain.
+     */
+    public function saveReplies(string $kunci = '')
     {
+        if ($kunci === '') {
+            $kunci = (string) $this->request->getPost('kunci');
+        }
+
+        $idTiket = $this->enkripsi->decode($kunci);
+        $datas   = (is_string($idTiket) && $idTiket !== '') ? $this->tiket->byId(['ticketTrackingId' => $idTiket]) : false;
+
+        if ($datas === false) {
+            $this->response->setStatusCode(403);
+            eult_message_kirim('Kunci tiket tidak valid.', 'error');
+        }
+
         if (! $this->validate(['repliesMessage' => 'required'])) {
             eult_message_kirim('Ooops!! Something Wrong!!', 'error');
         }
-
-        $idTiket = (string) $this->request->getPost('repliesTicketId');
 
         $konfig = [
             'url'      => WRITEPATH . 'uploads/chat/',
@@ -98,25 +113,26 @@ class Cektiket extends BaseController
         ]);
 
         if ($proses) {
-            return redirect()->to(base_url('cektiket/index/' . $this->enkripsi->encode($idTiket)));
+            return redirect()->to(base_url('cektiket/index/' . $kunci));
         }
 
-        return $this->index((string) $this->enkripsi->encode($idTiket));
+        return $this->index($kunci);
     }
 
     public function rating(string $kunci = '')
     {
         $nomorTiket = $this->enkripsi->decode($kunci);
+        $datas      = (is_string($nomorTiket) && $nomorTiket !== '') ? $this->tiket->byId(['ticketTrackingId' => $nomorTiket]) : false;
 
-        if (empty($nomorTiket)) {
+        if ($datas === false) {
+            $this->response->setStatusCode(403);
             eult_message_kirim('Kunci tidak valid.', 'error');
         }
 
         $rating = $this->request->getPost('rating');
         $param  = ['ratingNilai' => $rating, 'ratingTicketId' => $nomorTiket];
 
-        $datas = $this->tiket->byId(['ticketTrackingId' => $nomorTiket]);
-        $cek   = $this->tiket->ambilSatu('d_rating', ['ratingTicketId' => $nomorTiket]);
+        $cek = $this->tiket->ambilSatu('d_rating', ['ratingTicketId' => $nomorTiket]);
 
         $proses = empty($cek)
             ? $this->tiket->tambah('d_rating', $param)
@@ -136,20 +152,29 @@ class Cektiket extends BaseController
             $this->response->setHeader(csrf_header(), csrf_hash());
             eult_message_kirim('Terimakasih Telah Mengisi IKM, Untuk layanan dengan permintaan berkas, berkas telah kami kirimkan via email. Mohon Periksa Email Anda.', 'success');
         }
+
+        eult_message_kirim('Rating gagal disimpan.', 'error');
     }
 
     public function cetakterima(string $kunci = '')
     {
         $id    = $this->enkripsi->decode($kunci);
-        $datas = $this->tiket->byId(['ticketTrackingId' => $id]);
+        $datas = (is_string($id) && $id !== '') ? $this->tiket->byId(['ticketTrackingId' => $id]) : false;
+
+        if ($datas === false) {
+            return $this->response->setStatusCode(404)->setBody('Tiket tidak ditemukan.');
+        }
 
         $mpdf = new Mpdf();
         $mpdf->WriteHTML(view('pages/ticketing/cetak/tanda_terima', [
             'datas'        => $datas,
             'tanda_terima' => site_url('ticketing/tanda_terima'),
         ]));
-        $mpdf->Output();
-        exit;
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'inline; filename="tanda_terima_' . str_replace('-', '', (string) $id) . '.pdf"')
+            ->setBody($mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN));
     }
 
     /**

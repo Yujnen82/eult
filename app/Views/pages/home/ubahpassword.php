@@ -19,6 +19,7 @@
 
 				<!--begin::Form-->
 				<form class="kt-form" action="<?=$save_url?>" method="post" id="form_change_password">
+				    <?= csrf_field() ?>
 					<div class="kt-portlet__body">
 						<div class="form-group">
 							<label>Username</label>

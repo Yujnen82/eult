@@ -24,7 +24,7 @@ if (! function_exists('eult_tombol_aksi')) {
             $tiket     = new \App\Models\ModelTicketing();
             $enkripsi  = new \App\Libraries\Enkripsi();
             $idSurat   = $enkripsi->decode($param['key']);
-            $dataSurat = $tiket->ambilSatu('r_surat', "suratTrackingId = '" . esc($idSurat, 'js') . "'");
+            $dataSurat = $tiket->ambilSatu('r_surat', ['suratTrackingId' => (string) $idSurat]);
             $noSurat   = $dataSurat !== false && $dataSurat !== null ? ($dataSurat['suratNomor'] ?? '') : '';
         } catch (\Throwable $e) {
             $noSurat = '';

@@ -39,6 +39,7 @@
                             </div>
                         </div>
                         <form class="kt-form" action="<?= esc($show_url ?? '#') ?>" method="post" id="form_show">
+                            <?= csrf_field() ?>
                             <div class="kt-portlet__body">
                                 <div class="row">
                                     <div class="col-lg-<?= $isOperator ? '5' : '9' ?> col-md-12 mb-3 mb-lg-0">

@@ -40,6 +40,16 @@ Make sure that you provide a database engine that is currently running on your m
 More details on a test database setup are in the
 [Testing Your Database](https://codeigniter.com/user_guide/testing/database.html) section of the documentation.
 
+## Test suites (E-ULT)
+
+`phpunit.dist.xml` memisahkan test menurut infrastruktur yang dibutuhkan:
+
+| Suite      | Perintah                                   | Kebutuhan                                            |
+|------------|--------------------------------------------|------------------------------------------------------|
+| `Unit`     | `vendor/bin/phpunit` (default, dipakai CI) | Tidak ada (tanpa MySQL/server)                        |
+| `Database` | `vendor/bin/phpunit --testsuite Database`  | MySQL `db_newtiket` + `db_ult` via `.env` `EULT_DB_*` |
+| `Live`     | `vendor/bin/phpunit --testsuite Live`      | Server dev live / `php -S` subprocess                 |
+
 ## Running the tests
 
 The entire test suite can be run by simply typing one command-line command from the main directory.

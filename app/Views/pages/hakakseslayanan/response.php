@@ -3,6 +3,7 @@
 
 <!--begin::Form-->
 <form action="<?=$save_url?>" method="post" id="form_custom">
+    <?= csrf_field() ?>
 <input type="hidden" name="sgroupSgroupId" value="<?=!empty($sgroupSgroupId)?$sgroupSgroupId:''?>">
 <div class="kt-container  kt-container--fluid  kt-grid__item kt-grid__item--fluid">
     <div class="row">

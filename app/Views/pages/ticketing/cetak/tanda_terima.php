@@ -94,7 +94,7 @@
       <span class="sub-title">Nomor Tiket : <b><?= $datas['ticketTrackingId'] ?></b></span>
     </div>
     <div class="text-center">
-      <img width="100" src="../upload_file/qrcode/<?= $datas['ticketTrackingId'] ?>.png" alt="">
+      <img width="100" src="<?= WRITEPATH ?>uploads/qrcode/<?= $datas['ticketTrackingId'] ?>.png" alt="">
     </div>
     
     <div class="paragraf">

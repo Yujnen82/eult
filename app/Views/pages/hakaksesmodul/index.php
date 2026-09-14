@@ -35,6 +35,7 @@
 
                 <!--begin::Form-->
                 <form class="kt-form" action="<?= esc($show_url ?? '#') ?>" method="post" id="form_show">
+                    <?= csrf_field() ?>
                     <div class="kt-portlet__body">
                         <div class="form-group mb-0">
                             <label class="font-weight-bold text-dark mb-2">

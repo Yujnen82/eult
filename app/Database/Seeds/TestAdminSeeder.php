@@ -2,14 +2,19 @@
 
 namespace App\Database\Seeds;
 
+use CodeIgniter\CLI\CLI;
 use CodeIgniter\Database\Seeder;
 
 /**
  * Seeder untuk membuat akun admin test sementara.
  * Gunakan HANYA untuk keperluan development/QA — hapus setelah selesai.
  *
+ * Password diambil dari environment variable EULT_TEST_ADMIN_PASSWORD
+ * (minimal 12 karakter) sehingga tidak ada kredensial yang ter-commit.
+ * Seeder ini menolak berjalan pada ENVIRONMENT=production.
+ *
  * Jalankan:
- *   php spark db:seed TestAdminSeeder
+ *   EULT_TEST_ADMIN_PASSWORD='<rahasia>' php spark db:seed TestAdminSeeder
  *
  * Hapus akun test:
  *   php spark db:seed TestAdminSeeder drop
@@ -19,14 +24,17 @@ class TestAdminSeeder extends Seeder
     /** Username akun test — tidak boleh tabrakan dengan akun produksi */
     private const USERNAME = 'test.impeccable';
 
-    /** Password plaintext untuk QA — di-hash dengan password_hash() */
-    private const PASSWORD = 'Impeccable@2026!';
-
     /** Group ADMIN agar bisa akses semua halaman admin */
     private const GROUP = 'ADMIN';
 
     public function run()
     {
+        if (ENVIRONMENT === 'production') {
+            CLI::error('[TestAdminSeeder] Tidak boleh dijalankan pada environment production.');
+
+            return;
+        }
+
         // Cek apakah argumen drop dikirim via argv
         $isDrop = in_array('drop', $_SERVER['argv'] ?? [], true);
 
@@ -41,6 +49,14 @@ class TestAdminSeeder extends Seeder
 
     private function buatAkunTest(): void
     {
+        $sandi = (string) (getenv('EULT_TEST_ADMIN_PASSWORD') ?: env('EULT_TEST_ADMIN_PASSWORD', ''));
+
+        if (strlen($sandi) < 12) {
+            CLI::error('[TestAdminSeeder] Set EULT_TEST_ADMIN_PASSWORD (min. 12 karakter) sebelum menjalankan seeder.');
+
+            return;
+        }
+
         $db = \Config\Database::connect();
 
         // Cek apakah sudah ada
@@ -54,7 +70,7 @@ class TestAdminSeeder extends Seeder
             return;
         }
 
-        $hash = password_hash(self::PASSWORD, PASSWORD_DEFAULT);
+        $hash = password_hash($sandi, PASSWORD_DEFAULT);
 
         $berhasil = $db->table('s_user')->insert([
             'susrNama'        => self::USERNAME,
@@ -68,7 +84,7 @@ class TestAdminSeeder extends Seeder
         if ($berhasil) {
             CLI::write('[TestAdminSeeder] ✅ Akun test berhasil dibuat:', 'green');
             CLI::write('  Username : ' . self::USERNAME, 'green');
-            CLI::write('  Password : ' . self::PASSWORD, 'green');
+            CLI::write('  Password : (sesuai EULT_TEST_ADMIN_PASSWORD)', 'green');
             CLI::write('  Group    : ' . self::GROUP, 'green');
             CLI::write('[TestAdminSeeder] ⚠️  HAPUS akun ini setelah QA selesai!', 'red');
         } else {

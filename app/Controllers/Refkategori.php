@@ -92,7 +92,7 @@ class Refkategori extends BaseController
             'save_url'        => site_url($this->controllerName . '/save_sub') . '/',
             'status_page'     => 'Create',
             'datas'           => false,
-            'sCatCategoryId'  => $this->enkripsi->decode($kunci),
+            'kunci'           => $kunci,
         ])]);
     }
 

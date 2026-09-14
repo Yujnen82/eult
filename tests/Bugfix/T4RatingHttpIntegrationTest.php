@@ -223,7 +223,7 @@ final class T4RatingHttpIntegrationTest extends CIUnitTestCase
         }
 
         curl_setopt_array($ch, $opsi);
-        curl_exec($ch);
+        $html = curl_exec($ch);
         $errno = curl_errno($ch);
         $error = curl_error($ch);
 
@@ -240,15 +240,17 @@ final class T4RatingHttpIntegrationTest extends CIUnitTestCase
 
         self::assertSame(0, $errno, sprintf('cURL SHALL berhasil mengambil token CSRF dari server dev live (GET login) tanpa error transport (errno=%d: %s).', $errno, $error));
 
-        $isiJar = (string) file_get_contents($jarKuki);
-
+        // Token dibaca dari hidden input csrf_field() pada HTML, BUKAN dari
+        // nilai cookie: dengan Config\Security::$tokenRandomize = true nilai
+        // cookie adalah hash mentah, sedangkan token yang diverifikasi server
+        // adalah bentuk teracak yang hanya ada di HTML/header respons.
         self::assertMatchesRegularExpression(
-            '/csrf_cookie_name\s+([0-9a-f]+)/',
-            $isiJar,
-            'Prasyarat: cookie csrf_cookie_name SHALL ada pada cookie jar setelah GET login (Config\\Security::$csrfProtection = \'cookie\').'
+            '/name="csrf_test_name"\\s+value="([0-9a-f]+)"/',
+            (string) $html,
+            'Prasyarat: HTML halaman login SHALL memuat hidden input csrf_test_name (csrf_field()).'
         );
 
-        preg_match('/csrf_cookie_name\s+([0-9a-f]+)/', $isiJar, $tangkapan);
+        preg_match('/name="csrf_test_name"\\s+value="([0-9a-f]+)"/', (string) $html, $tangkapan);
 
         return ['jar' => $jarKuki, 'token' => 'csrf_test_name', 'hash' => $tangkapan[1]];
     }

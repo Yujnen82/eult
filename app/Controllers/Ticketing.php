@@ -1330,13 +1330,22 @@ class Ticketing extends BaseController
         $keluaran = fopen('php://temp', 'r+');
         fputcsv($keluaran, array_merge(array_values($kolom), ['Unit Disposisi']));
 
+        // Nilai seperti ticketName/disposisiMessage berasal dari input publik.
+        // Spreadsheet mengeksekusi sel yang diawali = + - @ (juga setelah
+        // tab/CR), jadi awalan itu dinetralkan dengan kutip tunggal.
+        $amankan = static function (string $nilai): string {
+            $bersih = ltrim($nilai, "\t\r");
+
+            return $bersih !== '' && strpbrk($bersih[0], "=+-@") !== false ? "'" . $nilai : $nilai;
+        };
+
         foreach ($baris as $row) {
             $sel = [];
             foreach (array_keys($kolom) as $kunciKolom) {
-                $sel[] = (string) ($row[$kunciKolom] ?? '');
+                $sel[] = $amankan((string) ($row[$kunciKolom] ?? ''));
             }
             // dataById() memakai dunitNama, disposisiAll() memakai unitNama.
-            $sel[] = (string) ($row['dunitNama'] ?? ($row['unitNama'] ?? ''));
+            $sel[] = $amankan((string) ($row['dunitNama'] ?? ($row['unitNama'] ?? '')));
             fputcsv($keluaran, $sel);
         }
 

@@ -119,6 +119,57 @@ final class EksporTiketTest extends CIUnitTestCase
         $this->assertStringNotContainsString('false', $isi);
     }
 
+    public function testNilaiDariInputPublikTidakMenjadiFormulaSpreadsheet(): void
+    {
+        // ticketName berasal langsung dari form tiket publik (Login::savetiket),
+        // lalu dibuka admin di Excel. Awalan = + - @ harus dinetralkan.
+        $this->koneksi->table('d_ticketing')
+            ->where('ticketTrackingId', self::TIKET)
+            ->update(['ticketName' => '=cmd|\'/c calc\'!A1']);
+
+        $kunci = (string) $this->enkripsi->encode(self::TIKET);
+
+        $hasil = $this->withSession(['logged_in' => $this->sesi()])
+            ->get('ticketing/export/' . $kunci);
+
+        $isi      = preg_replace('/^\xEF\xBB\xBF/', '', (string) $hasil->response()->getBody());
+        $pengurai = fopen('php://temp', 'r+');
+        fwrite($pengurai, (string) $isi);
+        rewind($pengurai);
+        $baris = [];
+        while (($r = fgetcsv($pengurai)) !== false) {
+            $baris[] = $r;
+        }
+        fclose($pengurai);
+
+        $sel = $baris[1][1] ?? '';
+
+        $this->assertSame('\'=cmd|\'/c calc\'!A1', $sel, 'Awalan formula harus dinetralkan kutip tunggal.');
+        $this->assertStringStartsNotWith('=', $sel);
+    }
+
+    public function testNilaiWajarTidakIkutDiubah(): void
+    {
+        $kunci = (string) $this->enkripsi->encode(self::TIKET);
+
+        $hasil = $this->withSession(['logged_in' => $this->sesi()])
+            ->get('ticketing/export/' . $kunci);
+
+        $isi      = preg_replace('/^\xEF\xBB\xBF/', '', (string) $hasil->response()->getBody());
+        $pengurai = fopen('php://temp', 'r+');
+        fwrite($pengurai, (string) $isi);
+        rewind($pengurai);
+        $baris = [];
+        while (($r = fgetcsv($pengurai)) !== false) {
+            $baris[] = $r;
+        }
+        fclose($pengurai);
+
+        // Nama biasa dan tanggal tidak boleh kejatuhan kutip tunggal.
+        $this->assertSame('Pemohon Uji', $baris[1][1] ?? '');
+        $this->assertSame('2026-09-14 08:30:00', $baris[1][7] ?? '');
+    }
+
     public function testEksporTiketTidakDikenalMengembalikan404BukanJsonFalse(): void
     {
         $kunci = (string) $this->enkripsi->encode('ZZEXP-TIDAK-ADA');

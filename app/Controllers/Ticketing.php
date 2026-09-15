@@ -875,20 +875,10 @@ class Ticketing extends BaseController
         if ($mode === 'sehari' || $this->request->getPost('pesanvalidasi') !== null) {
             $pesan = (string) $this->request->getPost('pesanvalidasi');
 
-            // Status tiket diubah LEBIH DULU: eult_upload_ticket() menulis
-            // baris d_archive + memindahkan berkas, jadi tidak boleh jalan
-            // untuk tiket yang gagal divalidasi.
-            $proses = $this->tiket->ubah('d_ticketing', [
-                'ticketStatus'     => 5,
-                'ticketIsValidasi' => 1,
-                'ticketmValidasi'  => $pesan,
-            ], ['ticketTrackingId' => $terbuka]);
-
-            if (! $proses) {
-                $galat = $this->tiket->dbAktif()->error();
-                eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
-            }
-
+            // Unggahan dijalankan LEBIH DULU karena eult_upload_ticket()
+            // memvalidasi tipe/ukuran dan membatalkan request lewat
+            // eult_message_kirim(); menaikkan status sebelum gerbang itu
+            // akan menandai tiket selesai walau berkasnya ditolak.
             $arsipId   = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), ['archiveTrackingId' => $terbuka]);
             $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $terbuka, 'archiveJenis' => 'OUTPUT'];
 
@@ -899,6 +889,17 @@ class Ticketing extends BaseController
                     'size'     => 15 * 1024,
                     'namafile' => 'OUTPUT_' . str_replace('-', '', (string) $terbuka) . '_' . date('YmdHis'),
                 ], $paramFile);
+            }
+
+            $proses = $this->tiket->ubah('d_ticketing', [
+                'ticketStatus'     => 5,
+                'ticketIsValidasi' => 1,
+                'ticketmValidasi'  => $pesan,
+            ], ['ticketTrackingId' => $terbuka]);
+
+            if (! $proses) {
+                $galat = $this->tiket->dbAktif()->error();
+                eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
             }
 
             eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'] . '.<br/> Pesan: ' . $pesan, (string) $terbuka);

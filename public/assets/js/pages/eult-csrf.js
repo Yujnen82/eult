@@ -60,10 +60,34 @@
 
     // Form yang dirender ulang via AJAX (modal/inline) membawa hidden input
     // csrf_field() dari server; sinkronkan meta agar token terbaru dipakai.
-    $(document).on('DOMNodeInserted', 'form', function () {
-        var input = $(this).find('input[type="hidden"][name="' + fieldName() + '"]').first();
+    // MutationObserver, bukan DOMNodeInserted: mutation events dimatikan
+    // default sejak Chromium 127 sehingga handler lama tidak pernah jalan.
+    var sinkronDariForm = function (root) {
+        if (!root || root.nodeType !== 1) {
+            return;
+        }
+
+        var nama = fieldName();
+        if (!nama) {
+            return;
+        }
+
+        var $root = $(root);
+        var input = $root.is('form') ? $root.find('input[type="hidden"][name="' + nama + '"]').first() : $();
+        if (!input.length) {
+            input = $root.find('form input[type="hidden"][name="' + nama + '"]').first();
+        }
+
         if (input.length && input.val()) {
             metaToken().attr('content', input.val());
         }
-    });
+    };
+
+    if (window.MutationObserver) {
+        new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                Array.prototype.forEach.call(record.addedNodes, sinkronDariForm);
+            });
+        }).observe(document.documentElement, { childList: true, subtree: true });
+    }
 })(window.jQuery);

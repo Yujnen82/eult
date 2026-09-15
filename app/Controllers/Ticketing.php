@@ -120,16 +120,22 @@ class Ticketing extends BaseController
 
     /**
      * Rentang tanggal "dd/mm/yyyy / dd/mm/yyyy" dari filter -> [awal, akhir] Y-m-d.
+     * Format tak terbaca mengembalikan rentang kosong, bukan diam-diam
+     * melaporkan hari ini seolah itu rentang yang diminta operator.
      *
      * @return array{0: string, 1: string}
      */
     private function rentangTanggal(string $tanggal): array
     {
         $pecah = explode('/', str_replace(' ', '', $tanggal));
-        $awal  = strtotime($pecah[0] ?? '') ?: time();
-        $akhir = strtotime($pecah[1] ?? '') ?: $awal;
+        $awal  = strtotime($pecah[0] ?? '');
+        $akhir = strtotime($pecah[1] ?? '');
 
-        return [date('Y-m-d', $awal), date('Y-m-d', $akhir)];
+        if ($awal === false) {
+            return ['', ''];
+        }
+
+        return [date('Y-m-d', $awal), date('Y-m-d', $akhir ?: $awal)];
     }
 
     public function response(): string
@@ -145,6 +151,10 @@ class Ticketing extends BaseController
 
         session()->set('tanggal', $tanggal);
         [$tanggalAwal, $tanggalAkhir] = $this->rentangTanggal($tanggal);
+
+        if ($tanggalAwal === '') {
+            eult_message_kirim('Format rentang tanggal tidak dikenali. Pilih ulang periode tanggal.', 'error');
+        }
 
         $kondisi = [
             'ticketCreated >=' => $tanggalAwal . ' 00:00:00',
@@ -164,7 +174,6 @@ class Ticketing extends BaseController
         $data['isVerifikator'] = strpos($this->pengguna['susrSgroupNama'], 'VERIFIKATOR');
         $data['sgroup']        = $this->tiket->ambilSatu('s_user_group_unit', ['sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'], 'sgroupunitIsHome >' => 0]);
         $data['user_group']    = $sesi['susrSgroupNama'];
-        $data['export_url']    = site_url($this->controllerName . '/export');
         $data['datas']         = $datas;
         $data['detail_url']    = site_url($this->controllerName . '/detail') . '/';
 
@@ -436,36 +445,41 @@ class Ticketing extends BaseController
         }
         $pegawai = $identitas !== false ? $this->osm->pegawaiId((string) $identitas['ticketIdentitas']) : false;
 
-        if (is_array($datas)) {
-            $datas = (object) $datas;
-        }
+        // getSurat() mengembalikan array|false. Pada alur Create Surat baris
+        // r_surat belum ada ($datas === false), jadi draf session HARUS
+        // ditimpa di atas array — menulis properti ke false adalah Error
+        // fatal di PHP 8.
+        $baris = is_array($datas) ? $datas : (is_object($datas) ? (array) $datas : []);
 
-        if ($datas) {
-            $pecah = explode('/', (string) $datas->suratNomor);
+        if ($baris !== []) {
+            $pecah = explode('/', (string) ($baris['suratNomor'] ?? ''));
             if (empty($pecah[0])) {
-                $datas->suratNomor = str_repeat('&nbsp;', 5) . $datas->suratNomor;
+                $baris['suratNomor'] = str_repeat('&nbsp;', 5) . ($baris['suratNomor'] ?? '');
             }
         }
 
-        if (isset($sesiSurat)) {
+        if (is_array($sesiSurat)) {
             $pejabat = explode(';', (string) $sesiSurat['suratPejabatNIPDraft']);
-            $datas->suratJenis                 = $sesiSurat['suratJenis'];
-            $datas->suratPerihal                = $sesiSurat['suratPerihal'];
-            $datas->suratLampiran               = $sesiSurat['suratLampiran'];
-            $datas->suratTujuan                 = $sesiSurat['suratTujuan'];
-            $datas->suratBody                   = $sesiSurat['suratBody'];
-            $datas->suratFooter                 = $sesiSurat['suratFooter'];
-            $datas->suratNomor                  = $sesiSurat['suratNomor'];
-            $datas->suratTanggal                = $sesiSurat['suratTanggal'];
-            $datas->suratPejabatJabatanAnDraft  = $sesiSurat['suratPejabatJabatanAnDraft'];
-            $datas->suratPejabatNIPDraft        = $pejabat[0] ?? '';
-            $datas->suratPejabatJabatanDraft    = $pejabat[1] ?? '';
-            $datas->suratPejabatNamaDraft       = $pejabat[2] ?? '';
+            $baris   = array_merge($baris, [
+                'suratJenis'                 => $sesiSurat['suratJenis'],
+                'suratPerihal'               => $sesiSurat['suratPerihal'],
+                'suratLampiran'              => $sesiSurat['suratLampiran'],
+                'suratTujuan'                => $sesiSurat['suratTujuan'],
+                'suratBody'                  => $sesiSurat['suratBody'],
+                'suratFooter'                => $sesiSurat['suratFooter'],
+                'suratNomor'                 => $sesiSurat['suratNomor'],
+                'suratTanggal'               => $sesiSurat['suratTanggal'],
+                'suratPejabatJabatanAnDraft' => $sesiSurat['suratPejabatJabatanAnDraft'],
+                'suratPejabatNIPDraft'       => $pejabat[0] ?? '',
+                'suratPejabatJabatanDraft'   => $pejabat[1] ?? '',
+                'suratPejabatNamaDraft'      => $pejabat[2] ?? '',
+            ]);
             session()->remove('sess_surat');
         }
 
-        // Template cetak_* mengakses $datas sebagai array.
-        $baris = is_object($datas) ? (array) $datas : $datas;
+        // Template cetak_* mengakses $datas sebagai array; kosong -> false
+        // agar percabangan `$datas != FALSE` di template tetap benar.
+        $baris = $baris === [] ? false : $baris;
         $form  = $this->templateCetak(is_array($baris) ? ($baris['tsuratForm'] ?? null) : null);
         $mpdf  = ($form === 'cetak_5') ? new Mpdf(['format' => 'Legal-P']) : new Mpdf();
         $mpdf->showImageErrors = true;
@@ -858,9 +872,13 @@ class Ticketing extends BaseController
         $this->tiketMentahTerotorisasi(is_string($terbuka) ? explode(';', $terbuka)[0] : '');
 
         if ($mode === 'sehari' || $this->request->getPost('pesanvalidasi') !== null) {
-            $pesan   = (string) $this->request->getPost('pesanvalidasi');
-            $arsipId = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), ['archiveTrackingId' => $terbuka]);
+            $pesan = (string) $this->request->getPost('pesanvalidasi');
 
+            // Unggahan dijalankan LEBIH DULU karena eult_upload_ticket()
+            // memvalidasi tipe/ukuran dan membatalkan request lewat
+            // eult_message_kirim(); menaikkan status sebelum gerbang itu
+            // akan menandai tiket selesai walau berkasnya ditolak.
+            $arsipId   = eult_auto_increment('d_archive', 'archiveId', str_replace('-', '', (string) $terbuka), ['archiveTrackingId' => $terbuka]);
             $paramFile = ['archiveId' => $arsipId, 'archiveTrackingId' => $terbuka, 'archiveJenis' => 'OUTPUT'];
 
             if ($this->request->getFile('ticketArchiveId') !== null && $this->request->getFile('ticketArchiveId')->getError() !== UPLOAD_ERR_NO_FILE) {
@@ -878,9 +896,12 @@ class Ticketing extends BaseController
                 'ticketmValidasi'  => $pesan,
             ], ['ticketTrackingId' => $terbuka]);
 
-            if ($proses) {
-                eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'] . '.<br/> Pesan: ' . $pesan, (string) $terbuka);
+            if (! $proses) {
+                $galat = $this->tiket->dbAktif()->error();
+                eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
             }
+
+            eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'] . '.<br/> Pesan: ' . $pesan, (string) $terbuka);
         } else {
             $nomorSurat = (string) $this->request->getPost('nomor_surat');
             $gabung     = explode(';', (string) $terbuka);
@@ -895,19 +916,17 @@ class Ticketing extends BaseController
             $proses = $this->tiket->ubah('d_ticketing', ['ticketStatus' => 5, 'ticketIsValidasi' => 1], ['ticketTrackingId' => $idTiket])
                 && $this->tiket->ubah('r_surat', ['suratNomor' => $nomorSurat, 'suratNomorTanggal' => date('Y-m-d')], ['suratTrackingId' => $idTiket]);
 
-            if ($proses) {
-                eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'], $idTiket);
-                $this->cetaksurat((string) $this->enkripsi->encode($idTiket . ';' . $namaBerkas));
+            if (! $proses) {
+                $galat = $this->tiket->dbAktif()->error();
+                eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
             }
+
+            eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'], $idTiket);
+            $this->cetaksurat((string) $this->enkripsi->encode($idTiket . ';' . $namaBerkas));
             $terbuka = $idTiket;
         }
 
-        if (! empty($proses)) {
-            eult_message_kirim($this->judul . ' Berhasil Divalidasi dan Tiket telah Selesai', 'success');
-        }
-
-        $galat = $this->tiket->dbAktif()->error();
-        eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
+        eult_message_kirim($this->judul . ' Berhasil Divalidasi dan Tiket telah Selesai', 'success');
     }
 
     public function validasiEktm(string $kunci = '')
@@ -933,6 +952,14 @@ class Ticketing extends BaseController
                 'suratPejabatJabatan' => $jabatanPejabat,
                 'suratBank'           => $bank,
             ]);
+
+        // Gagal simpan harus berhenti DI SINI: riwayat, baris d_archive, QR
+        // dan berkas PDF adalah efek samping yang tidak boleh ditulis untuk
+        // tiket yang statusnya tidak berubah.
+        if (! $proses) {
+            $galat = $this->tiket->dbAktif()->error();
+            eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
+        }
 
         eult_save_history('Layanan telah diselesaikan oleh ' . $this->pengguna['susrProfil'], (string) $terbuka);
 
@@ -994,12 +1021,7 @@ class Ticketing extends BaseController
                         </table>');
         $mpdf->Output(WRITEPATH . 'uploads/ticketing/' . $namaBerkas . '.pdf', 'F');
 
-        if ($proses) {
-            eult_message_kirim($this->judul . ' Berhasil Divalidasi dan Tiket telah Selesai', 'success');
-        }
-
-        $galat = $this->tiket->dbAktif()->error();
-        eult_message_kirim($this->judul . ' Gagal divalidasi, ' . ($galat['code'] ?? '') . ': ' . ($galat['message'] ?? ''), 'error');
+        eult_message_kirim($this->judul . ' Berhasil Divalidasi dan Tiket telah Selesai', 'success');
     }
 
     public function editSuratKtm(string $kunci = '')
@@ -1254,19 +1276,88 @@ class Ticketing extends BaseController
         return $this->response->setHeader('Content-Type', $mime)->setBody(file_get_contents($lokasi));
     }
 
+    /**
+     * Unduh rekap satu tiket sebagai CSV (dibuka spreadsheet). Sebelumnya
+     * endpoint ini mengembalikan JSON mentah sehingga tombol "Export" pada
+     * baris tabel hanya menampilkan teks JSON di peramban.
+     */
     public function export(string $kunci = '')
     {
         $id             = $this->tiketTerotorisasi($kunci);
         [$awal, $akhir] = $this->rentangTanggal((string) session()->get('tanggal'));
 
-        return $this->response->setJSON(
-            $this->tiket->disposisiAll([
-                'ticketCreated >='     => $awal . ' 00:00:00',
-                'ticketCreated <='     => $akhir . ' 23:59:59',
-                'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'],
-                'disposisiTicketId'    => $id,
-            ])
-        );
+        $kondisi = [];
+
+        // Rentang tanggal hanya dipakai bila sesi filter memang punya nilai
+        // yang terbaca; tanpa itu rekap tiket tetap dapat diunduh.
+        if ($awal !== '') {
+            $kondisi['ticketCreated >='] = $awal . ' 00:00:00';
+            $kondisi['ticketCreated <='] = $akhir . ' 23:59:59';
+        }
+
+        // Cakupan mengikuti response(): ADMIN/OPERATOR memakai dataById,
+        // grup unit memakai disposisiAll yang tersaring s_user_group_unit.
+        // Menyaring ADMIN dengan sgroupunitSgroupNama selalu kosong karena
+        // ADMIN tidak punya baris pemetaan unit.
+        $grup = (string) ($this->pengguna['susrSgroupNama'] ?? '');
+
+        if ($grup === 'ADMIN' || strpos($grup, 'OPERATOR') !== false) {
+            $kondisi['ticketTrackingId'] = $id;
+            $baris                       = $this->tiket->dataById($kondisi);
+        } else {
+            $kondisi['sgroupunitSgroupNama'] = $grup;
+            $kondisi['disposisiTicketId']    = $id;
+            $baris                           = $this->tiket->disposisiAll($kondisi);
+        }
+
+        if ($baris === false) {
+            return $this->response->setStatusCode(404)->setBody('Data tiket tidak ditemukan untuk diekspor.');
+        }
+
+        $kolom = [
+            'ticketTrackingId' => 'Nomor Tiket',
+            'ticketName'       => 'Pemohon',
+            'ticketEmail'      => 'Email',
+            'sCatNama'         => 'Layanan',
+            'categoryNama'     => 'Unit Layanan',
+            'statusNama'       => 'Status',
+            'priorityName'     => 'Prioritas',
+            'ticketCreated'    => 'Dibuat',
+            'disposisiMessage' => 'Catatan Disposisi',
+            'disposisiTanggal' => 'Tanggal Disposisi',
+        ];
+
+        $keluaran = fopen('php://temp', 'r+');
+        fputcsv($keluaran, array_merge(array_values($kolom), ['Unit Disposisi']));
+
+        // Nilai seperti ticketName/disposisiMessage berasal dari input publik.
+        // Spreadsheet mengeksekusi sel yang diawali = + - @ (juga setelah
+        // tab/CR), jadi awalan itu dinetralkan dengan kutip tunggal.
+        $amankan = static function (string $nilai): string {
+            $bersih = ltrim($nilai, "\t\r");
+
+            return $bersih !== '' && strpbrk($bersih[0], "=+-@") !== false ? "'" . $nilai : $nilai;
+        };
+
+        foreach ($baris as $row) {
+            $sel = [];
+            foreach (array_keys($kolom) as $kunciKolom) {
+                $sel[] = $amankan((string) ($row[$kunciKolom] ?? ''));
+            }
+            // dataById() memakai dunitNama, disposisiAll() memakai unitNama.
+            $sel[] = $amankan((string) ($row['dunitNama'] ?? ($row['unitNama'] ?? '')));
+            fputcsv($keluaran, $sel);
+        }
+
+        rewind($keluaran);
+        $csv = (string) stream_get_contents($keluaran);
+        fclose($keluaran);
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=UTF-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="tiket_' . str_replace('-', '', (string) $id) . '.csv"')
+            // BOM agar Excel membaca UTF-8 dengan benar.
+            ->setBody("\xEF\xBB\xBF" . $csv);
     }
 
     public function cetakterima(string $kunci = '')

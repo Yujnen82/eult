@@ -1000,10 +1000,48 @@ const KTTicketing = function () {
         });
     }
 
+    // Ekspor daftar tiket yang sedang tampil, mengikuti pola laporan.js.
+    // Endpoint ticketing/export/(:any) mengembalikan JSON satu tiket, jadi
+    // tidak cocok dipasang sebagai href tombol "Ekspor Excel" pada daftar.
+    const bindExport = () => {
+        $(document).off('click.ticketingExport', '#btn-export').on('click.ticketingExport', '#btn-export', function (e) {
+            e.preventDefault();
+
+            const table = $('#table_ticketing');
+            if (!table.length || table.find('tbody tr').length === 0 || table.find('td[colspan]').length) {
+                swal.fire({
+                    title: 'Tidak Ada Data',
+                    text: 'Tampilkan daftar tiket terlebih dahulu sebelum mengekspor.',
+                    type: 'info'
+                });
+                return;
+            }
+
+            if (typeof $.fn.tableExport !== 'function') {
+                swal.fire({
+                    title: 'Fitur Belum Siap',
+                    text: 'Modul ekspor spreadsheet belum selesai dimuat. Silakan muat ulang halaman.',
+                    type: 'error'
+                });
+                return;
+            }
+
+            const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+            table.tableExport({
+                fileName: 'daftar_tiket_' + stamp,
+                type: 'excel',
+                // Kolom terakhir (Aksi) hanya berisi tombol, tidak bermakna di spreadsheet.
+                ignoreColumn: [table.find('thead th').length - 1]
+            });
+        });
+    };
+
     return {
         init: function () {
             initHandleWidgets();
             initHandleShow();
+            bindExport();
         }
     };
 }();

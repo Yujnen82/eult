@@ -21,6 +21,12 @@ $closeUrl     = $close_url ?? '#';
 $loadAttach   = $load_attach ?? site_url('cektiket/loadattach');
 $ratingUrl    = $rating_url ?? site_url('cektiket/rating');
 $cetakTerima  = $cetakterima ?? '#';
+// Cektiket::saveReplies/rating menentukan tiket dari kunci terenkripsi, bukan
+// nomor tiket mentah. Kunci diambil dari segmen terakhir save_url agar form
+// tetap sah walau view dirender dengan fallback URL tanpa kunci.
+$kunciTiket   = (string) ($key ?? ($kunci ?? trim((string) parse_url((string) $saveUrl, PHP_URL_PATH), '/')));
+$kunciTiket   = $kunciTiket !== '' ? basename($kunciTiket) : '';
+$kunciTiket   = in_array($kunciTiket, ['save_replies', ''], true) ? '' : $kunciTiket;
 $inisial      = strtoupper(substr(trim($namaPemohon) !== '' ? $namaPemohon : 'P', 0, 1));
 
 $tglTiket = '';
@@ -879,6 +885,7 @@ $labelStatusLive = $selesai ? 'Selesai' : ($ditolak ? 'Tidak dilanjutkan' : 'Dal
                     <div class="eult-portlet-foot">
                         <form class="eult-composer" action="<?= esc($saveUrl) ?>" method="POST" enctype="multipart/form-data">
                             <?= csrf_field() ?>
+                            <input type="hidden" name="kunci" value="<?= esc($kunciTiket, 'attr') ?>">
                             <input type="hidden" name="repliesTicketId" value="<?= esc($trackingId, 'attr') ?>">
                             <label class="sr-only" for="repliesMessage">Pesan balasan</label>
                             <textarea id="repliesMessage" name="repliesMessage" placeholder="Tulis pesan untuk petugas ULT..." required></textarea>

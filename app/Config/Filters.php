@@ -73,6 +73,11 @@ class Filters extends BaseFilters
             'pagecache',   // Web Page Caching
             'performance', // Performance Metrics
             'toolbar',     // Debug Toolbar
+            // ResponsAwalException (eult_message_kirim) ditangkap di
+            // CodeIgniter::run(), SETELAH globals['after'] dilewati. Header
+            // keamanan harus required agar respons JSON helper tetap
+            // membawanya.
+            'secureheaders',
         ],
     ];
 
@@ -93,7 +98,6 @@ class Filters extends BaseFilters
         ],
         'after' => [
             // 'honeypot',
-            'secureheaders',
             // Token CSRF terbaru untuk request AJAX (dibaca eult-csrf.js).
             'csrftoken',
         ],

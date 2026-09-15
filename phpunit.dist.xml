@@ -38,12 +38,14 @@
             <file>./tests/Bugfix/R1EscPreservationTest.php</file>
             <exclude>./tests/unit/AksesBerkasTest.php</exclude>
             <exclude>./tests/unit/AlurFondasiTest.php</exclude>
+            <exclude>./tests/unit/EksporTiketTest.php</exclude>
             <exclude>./tests/unit/PublicPortalViewsTest.php</exclude>
         </testsuite>
         <testsuite name="Database">
             <directory>./tests/database</directory>
             <file>./tests/unit/AksesBerkasTest.php</file>
             <file>./tests/unit/AlurFondasiTest.php</file>
+            <file>./tests/unit/EksporTiketTest.php</file>
             <file>./tests/unit/PublicPortalViewsTest.php</file>
             <file>./tests/Bugfix/K1SqlInjectionExplorationTest.php</file>
             <file>./tests/Bugfix/K1SqlInjectionPreservationTest.php</file>

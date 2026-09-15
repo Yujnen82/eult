@@ -174,7 +174,6 @@ class Ticketing extends BaseController
         $data['isVerifikator'] = strpos($this->pengguna['susrSgroupNama'], 'VERIFIKATOR');
         $data['sgroup']        = $this->tiket->ambilSatu('s_user_group_unit', ['sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'], 'sgroupunitIsHome >' => 0]);
         $data['user_group']    = $sesi['susrSgroupNama'];
-        $data['export_url']    = site_url($this->controllerName . '/export');
         $data['datas']         = $datas;
         $data['detail_url']    = site_url($this->controllerName . '/detail') . '/';
 
@@ -1277,23 +1276,79 @@ class Ticketing extends BaseController
         return $this->response->setHeader('Content-Type', $mime)->setBody(file_get_contents($lokasi));
     }
 
+    /**
+     * Unduh rekap satu tiket sebagai CSV (dibuka spreadsheet). Sebelumnya
+     * endpoint ini mengembalikan JSON mentah sehingga tombol "Export" pada
+     * baris tabel hanya menampilkan teks JSON di peramban.
+     */
     public function export(string $kunci = '')
     {
         $id             = $this->tiketTerotorisasi($kunci);
         [$awal, $akhir] = $this->rentangTanggal((string) session()->get('tanggal'));
 
-        if ($awal === '') {
-            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Rentang tanggal tidak tersedia pada sesi ini.']);
+        $kondisi = [];
+
+        // Rentang tanggal hanya dipakai bila sesi filter memang punya nilai
+        // yang terbaca; tanpa itu rekap tiket tetap dapat diunduh.
+        if ($awal !== '') {
+            $kondisi['ticketCreated >='] = $awal . ' 00:00:00';
+            $kondisi['ticketCreated <='] = $akhir . ' 23:59:59';
         }
 
-        return $this->response->setJSON(
-            $this->tiket->disposisiAll([
-                'ticketCreated >='     => $awal . ' 00:00:00',
-                'ticketCreated <='     => $akhir . ' 23:59:59',
-                'sgroupunitSgroupNama' => $this->pengguna['susrSgroupNama'],
-                'disposisiTicketId'    => $id,
-            ])
-        );
+        // Cakupan mengikuti response(): ADMIN/OPERATOR memakai dataById,
+        // grup unit memakai disposisiAll yang tersaring s_user_group_unit.
+        // Menyaring ADMIN dengan sgroupunitSgroupNama selalu kosong karena
+        // ADMIN tidak punya baris pemetaan unit.
+        $grup = (string) ($this->pengguna['susrSgroupNama'] ?? '');
+
+        if ($grup === 'ADMIN' || strpos($grup, 'OPERATOR') !== false) {
+            $kondisi['ticketTrackingId'] = $id;
+            $baris                       = $this->tiket->dataById($kondisi);
+        } else {
+            $kondisi['sgroupunitSgroupNama'] = $grup;
+            $kondisi['disposisiTicketId']    = $id;
+            $baris                           = $this->tiket->disposisiAll($kondisi);
+        }
+
+        if ($baris === false) {
+            return $this->response->setStatusCode(404)->setBody('Data tiket tidak ditemukan untuk diekspor.');
+        }
+
+        $kolom = [
+            'ticketTrackingId' => 'Nomor Tiket',
+            'ticketName'       => 'Pemohon',
+            'ticketEmail'      => 'Email',
+            'sCatNama'         => 'Layanan',
+            'categoryNama'     => 'Unit Layanan',
+            'statusNama'       => 'Status',
+            'priorityName'     => 'Prioritas',
+            'ticketCreated'    => 'Dibuat',
+            'disposisiMessage' => 'Catatan Disposisi',
+            'disposisiTanggal' => 'Tanggal Disposisi',
+        ];
+
+        $keluaran = fopen('php://temp', 'r+');
+        fputcsv($keluaran, array_merge(array_values($kolom), ['Unit Disposisi']));
+
+        foreach ($baris as $row) {
+            $sel = [];
+            foreach (array_keys($kolom) as $kunciKolom) {
+                $sel[] = (string) ($row[$kunciKolom] ?? '');
+            }
+            // dataById() memakai dunitNama, disposisiAll() memakai unitNama.
+            $sel[] = (string) ($row['dunitNama'] ?? ($row['unitNama'] ?? ''));
+            fputcsv($keluaran, $sel);
+        }
+
+        rewind($keluaran);
+        $csv = (string) stream_get_contents($keluaran);
+        fclose($keluaran);
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv; charset=UTF-8')
+            ->setHeader('Content-Disposition', 'attachment; filename="tiket_' . str_replace('-', '', (string) $id) . '.csv"')
+            // BOM agar Excel membaca UTF-8 dengan benar.
+            ->setBody("\xEF\xBB\xBF" . $csv);
     }
 
     public function cetakterima(string $kunci = '')

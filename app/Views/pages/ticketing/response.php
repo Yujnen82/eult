@@ -13,12 +13,12 @@
                             <?= esc(strtoupper($page_judul ?? 'Daftar Tiket Permohonan Layanan')) ?>
                         </h3>
                     </div>
-                    <?php if (!empty($export_url) && ($user_group ?? '') === 'ADMIN'): ?>
+                    <?php if (($user_group ?? '') === 'ADMIN'): ?>
                         <div class="kt-portlet__head-toolbar">
                             <div class="kt-portlet__head-actions">
-                                <a href="<?= esc($export_url) ?>" class="btn btn-sm btn-outline-success font-weight-bold" id="btn-export">
+                                <button type="button" class="btn btn-sm btn-outline-success font-weight-bold" id="btn-export">
                                     <i class="fa fa-file-excel mr-1"></i> Ekspor Excel
-                                </a>
+                                </button>
                             </div>
                         </div>
                     <?php endif; ?>
